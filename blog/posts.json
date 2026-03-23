@@ -1,5 +1,19 @@
 [
   {
+    "slug": "test-post-1",
+    "title": "머신러닝 기초",
+    "date": "2026-03-23",
+    "tags": ["ml", "tutorial"],
+    "summary": "머신러닝의 기본 개념과 학습 방법론"
+  },
+  {
+    "slug": "test-post-2",
+    "title": "딥러닝과 신경망",
+    "date": "2026-03-23",
+    "tags": ["ml", "deep-learning"],
+    "summary": "딥러닝과 신경망 구조에 대한 설명"
+  },
+  {
     "slug": "hello-world",
     "title": "Hello World — 첫 번째 글",
     "date": "2026-03-23",

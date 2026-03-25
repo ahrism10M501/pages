@@ -46,7 +46,7 @@ function renderPostList(posts, container, postsBasePath) {
 function getSlugFromURL() {
   const path = window.location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
   const parts = path.split('/');
-  return parts[parts.length - 1];
+  return decodeURIComponent(parts[parts.length - 1]);
 }
 
 // Render projects from projects.json into a horizontal scroll container

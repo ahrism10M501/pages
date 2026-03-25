@@ -92,3 +92,25 @@ def test_recommend_tags_max_tags():
     assert len(result) == 2
     # First result should be "a" (highest similarity)
     assert result[0][0] == "a"
+
+def test_generate_new_tags():
+    """TF-IDF 키워드에서 새 태그 후보 생성, 기존 태그와 중복 제거."""
+    from auto_tag import generate_new_tags
+    import numpy as np
+
+    # 기존 태그가 없으면 키워드가 그대로 태그가 됨
+    keywords = ["신경망", "pytorch", "역전파"]
+    existing_cache = {}
+    result = generate_new_tags(keywords, existing_cache, max_new=2)
+    assert len(result) <= 2
+    assert all(isinstance(t, str) for t in result)
+
+def test_generate_new_tags_dedup():
+    """기존 태그와 이름이 겹치면 제외."""
+    from auto_tag import generate_new_tags
+    import numpy as np
+
+    keywords = ["python", "새키워드"]
+    existing_cache = {"python": np.array([0.1, 0.2])}
+    result = generate_new_tags(keywords, existing_cache, max_new=3)
+    assert "python" not in result

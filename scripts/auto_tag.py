@@ -109,3 +109,23 @@ def recommend_tags(
 
     ranked = sorted(zip(tag_names, sims), key=lambda x: x[1], reverse=True)
     return [(t, float(s)) for t, s in ranked if s >= threshold][:max_tags]
+
+
+def generate_new_tags(
+    tfidf_keywords: list[str],
+    existing_cache: dict[str, np.ndarray],
+    max_new: int = 3,
+) -> list[str]:
+    """TF-IDF 키워드에서 새 태그 후보 생성.
+
+    기존 태그와 이름이 같으면 제외.
+    """
+    existing_names = set(existing_cache.keys())
+    candidates = []
+    for kw in tfidf_keywords:
+        normalized = normalize_tag(kw)
+        if normalized and normalized not in existing_names and len(normalized) >= 2:
+            candidates.append(normalized)
+        if len(candidates) >= max_new:
+            break
+    return candidates

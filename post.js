@@ -28,7 +28,8 @@
     document.title = `${post.title} — ahrism`;
     document.getElementById('post-title').textContent = post.title;
     document.getElementById('post-meta').innerHTML =
-      `${post.date} ${post.tags.map(t => `<span class="tag">${t}</span>`).join(' ')}`;
+      `<span class="editorial-label">${post.date}</span>` +
+      post.tags.map(t => `<span class="tag">${t}</span>`).join(' ');
   }
 
   if (mdRes.ok) {

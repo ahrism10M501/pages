@@ -108,7 +108,7 @@
 }
 .project-scroll::-webkit-scrollbar-thumb {
   background: #1e1e1e;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 /* Project card */
@@ -116,7 +116,7 @@
   flex: 0 0 260px;
   background: #111;
   border: 1px solid #1e1e1e;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 1.2rem;
   display: flex;
   flex-direction: column;
@@ -162,14 +162,14 @@
 /* Post content area */
 .post-content img {
   max-width: 100%;
-  border-radius: 6px;
+  border-radius: 0;
 }
 .post-content .video-container {
   position: relative;
   width: 100%;
   padding-bottom: 56.25%; /* 16:9 */
   margin: 1.5rem 0;
-  border-radius: 6px;
+  border-radius: 0;
   overflow: hidden;
 }
 .post-content .video-container iframe {
@@ -183,7 +183,7 @@
 .post-content pre {
   background: #111;
   border: 1px solid #1e1e1e;
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 /* CTA button (critical accent) */
@@ -209,7 +209,7 @@ nav a.active { color: #dc00c9; }
   border: 1px solid #1e1e1e;
   color: #ccc;
   padding: 0.5rem 0.8rem;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 0.9rem;
 }
 .search-bar input:focus {
@@ -232,7 +232,7 @@ nav a.active { color: #dc00c9; }
   width: 36px;
   height: 20px;
   background: #1e1e1e;
-  border-radius: 10px;
+  border-radius: 0;
   position: relative;
   cursor: pointer;
 }
@@ -266,7 +266,7 @@ nav a.active { color: #dc00c9; }
   gap: 0;
   margin-bottom: 1rem;
   border: 1px solid #1e1e1e;
-  border-radius: 6px;
+  border-radius: 0;
   overflow: hidden;
   width: fit-content;
 }
@@ -291,7 +291,7 @@ nav a.active { color: #dc00c9; }
   height: var(--graph-h, 45vh);
   background: #0a0a0a;
   border: 1px solid #1e1e1e;
-  border-radius: 8px;
+  border-radius: 0;
   margin-bottom: 1rem;
   overflow: hidden;
   transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -423,7 +423,7 @@ body {
   font-size: 0.7rem;
   white-space: nowrap;
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 0;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -469,11 +469,11 @@ body {
 }
 .gh-repo-scroll::-webkit-scrollbar { height: 4px; }
 .gh-repo-scroll::-webkit-scrollbar-track { background: transparent; }
-.gh-repo-scroll::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 2px; }
+.gh-repo-scroll::-webkit-scrollbar-thumb { background: #1e1e1e; border-radius: 0; }
 .gh-repo-card {
   background: #111;
   border: 1px solid #1e1e1e;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 1.2rem;
   display: flex;
   flex-direction: column;
@@ -566,7 +566,7 @@ body {
     height: 36px;
     background: #111;
     border: 1px solid #1e1e1e;
-    border-radius: 6px;
+    border-radius: 0;
     color: #777;
     font-size: 1rem;
     cursor: pointer;

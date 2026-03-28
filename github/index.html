@@ -16,13 +16,13 @@
       <button class="sidebar-btn active" data-label="GitHub" data-href="./">⬡</button>
     </div>
     <div id="panel-about" class="sidebar-panel">
-      <div class="panel-header">About</div>
+      <div class="label">About</div>
       <p class="panel-placeholder">준비 중</p>
     </div>
   </aside>
   <main class="container">
     <div class="editorial-header">
-      <span class="editorial-label">GitHub</span>
+      <span class="label--slash">GitHub</span>
       <h1>Repositories</h1>
     </div>
     <div id="github-sources"></div>
@@ -176,8 +176,8 @@
     var section = document.createElement('div');
     section.className = 'gh-source-section';
 
-    var label = document.createElement('h2');
-    label.className = 'gh-source-label';
+    var label = document.createElement('div');
+    label.className = 'label';
     label.textContent = source.label || source.name;
     section.appendChild(label);
 

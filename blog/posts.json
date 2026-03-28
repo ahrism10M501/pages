@@ -35,6 +35,21 @@
     "summary": "Dockerfile, Compose, 레이어 캐시 전략까지 실전 Docker"
   },
   {
+    "slug": "인공신경망2",
+    "title": "인공신경망2 - XOR문제와 활성화 함수",
+    "date": "2026-03-22",
+    "tags": [
+      "numpy",
+      "python",
+      "pytorch",
+      "딥러닝",
+      "머신러닝",
+      "신경망",
+      "활성화함수"
+    ],
+    "summary": "퍼셉트론의 XOR 문제를 알아보고 이를 해결하기 위한 활성화 함수를 그려보자"
+  },
+  {
     "slug": "python-performance",
     "title": "Python 성능 최적화 실전 가이드",
     "date": "2026-03-21",
@@ -80,7 +95,8 @@
       "python",
       "docker",
       "컨테이너",
-      "dockerfile"
+      "dockerfile",
+      "딥러닝"
     ],
     "summary": "ahrism 블로그의 첫 번째 글입니다."
   },

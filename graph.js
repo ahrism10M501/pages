@@ -322,15 +322,20 @@ function applyDepthEffect(cy) {
     return { node: node, score: wDeg };
   });
 
-  // 오름차순 정렬 → 상위 20%만 확대
-  scored.sort(function (a, b) { return a.score - b.score; });
-  const thresholdIndex = Math.floor(scored.length * 0.8);
-  const baseSize = 30;
-  const enlargedSize = 46;
+  const scores = scored.map(function (s) { return s.score; });
+  const minScore = Math.min.apply(null, scores);
+  const maxScore = Math.max.apply(null, scores);
+  const range = maxScore - minScore;
+
+  const baseSize = 26;
+  const enlargedSize = 42;
 
   cy.batch(function () {
-    scored.forEach(function (entry, index) {
-      var size = index >= thresholdIndex ? enlargedSize : baseSize;
+    scored.forEach(function (entry) {
+      // 점수 범위가 너무 좁으면 균일 크기 사용
+      var size = range < 0.5
+        ? baseSize
+        : baseSize + ((entry.score - minScore) / range) * (enlargedSize - baseSize);
       entry.node.style({ width: size, height: size });
     });
   });

@@ -1,3 +1,45 @@
+// Page fold entrance animation
+(function () {
+  var dir = sessionStorage.getItem('nav-direction');
+  sessionStorage.removeItem('nav-direction');
+  if (!dir) return;
+  var el = document.getElementById('page-content');
+  if (!el) return;
+
+  document.documentElement.style.overflow = 'hidden';
+
+  // 시작 상태 즉시 설정 (transition 없이)
+  el.style.transition = 'none';
+  el.style.transformOrigin = 'top center';
+  if (dir === 'forward') {
+    el.style.transform = 'translateY(100%)';
+  } else {
+    el.style.transform = 'perspective(900px) rotateX(-90deg) translateY(-55px)';
+    el.style.opacity   = '0';
+  }
+
+  // reflow → 다음 프레임에 transition + 최종 상태
+  void el.offsetHeight;
+  requestAnimationFrame(function () {
+    el.style.transition = 'transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease';
+    el.style.transform  = '';
+    el.style.opacity    = '';
+
+    function cleanup() {
+      el.style.transition      = '';
+      el.style.transformOrigin = '';
+      document.documentElement.style.overflow = '';
+    }
+    // transitionend가 오지 않는 경우에도 반드시 해제
+    var fallback = setTimeout(cleanup, 600);
+    el.addEventListener('transitionend', function done() {
+      clearTimeout(fallback);
+      cleanup();
+      el.removeEventListener('transitionend', done);
+    });
+  });
+})();
+
 // Format YYYY-MM-DD → "Jan 15"
 function formatPostDate(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');

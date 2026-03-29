@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body data-page="1">
   <aside id="sidebar">
     <div class="sidebar-icons">
       <button class="sidebar-btn" data-label="Home" data-href="../">⌂</button>
@@ -20,6 +20,7 @@
       <p class="panel-placeholder">준비 중</p>
     </div>
   </aside>
+  <div id="page-content">
   <main class="container">
     <!-- 1. 검색바 최상단 -->
     <div class="search-bar" style="margin-top:1rem">
@@ -74,14 +75,33 @@
 
     </div>
   </footer>
+  </div><!-- /#page-content -->
 
-  <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
   <script src="../app.js"></script>
   <script src="../graph.js"></script>
   <script>
+    // Cytoscape 스크립트를 그래프 뷰 진입 시 동적 로드 (초기 로딩 속도 개선)
+    function loadCytoscapeScripts() {
+      if (window._cytoscapeLoaded) return Promise.resolve();
+      if (window._cytoscapeLoading) return window._cytoscapeLoading;
+      var srcs = [
+        'https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js',
+        'https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js',
+        'https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js',
+        'https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js',
+      ];
+      window._cytoscapeLoading = srcs.reduce(function (chain, src) {
+        return chain.then(function () {
+          return new Promise(function (resolve, reject) {
+            var s = document.createElement('script');
+            s.src = src; s.onload = resolve; s.onerror = reject;
+            document.head.appendChild(s);
+          });
+        });
+      }, Promise.resolve()).then(function () { window._cytoscapeLoaded = true; });
+      return window._cytoscapeLoading;
+    }
+
     (async () => {
       // --- 데이터 로드 ---
       const graphData = await fetchGraph('./graph.json');
@@ -146,7 +166,10 @@
         applyFilters();
       }
 
-      btnGraph.addEventListener('click', () => setView('graph'));
+      btnGraph.addEventListener('click', () => {
+        // Cytoscape 동적 로드 후 그래프 뷰 전환
+        loadCytoscapeScripts().then(() => setView('graph'));
+      });
       btnList.addEventListener('click', () => setView('list'));
 
       // 그래프 데이터가 없거나 노드 0~1개면 리스트로 폴백
@@ -220,5 +243,6 @@
     })();
   </script>
   <script src="../sidebar.js"></script>
+  <script src="../page-fold.js"></script>
 </body>
 </html>

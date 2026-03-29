@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <link rel="stylesheet" href="../style.css">
 </head>
-<body>
+<body data-page="2">
   <aside id="sidebar">
     <div class="sidebar-icons">
       <button class="sidebar-btn" data-label="Home" data-href="../">⌂</button>
@@ -20,6 +20,7 @@
       <p class="panel-placeholder">준비 중</p>
     </div>
   </aside>
+  <div id="page-content">
   <main class="container">
     <div class="editorial-header">
       <span class="label--slash">GitHub</span>
@@ -52,6 +53,7 @@
 
     </div>
   </footer>
+  </div><!-- /#page-content -->
 
   <script>
 (function () {
@@ -227,6 +229,8 @@
     });
 })();
   </script>
+  <script src="../app.js"></script>
   <script src="../sidebar.js"></script>
+  <script src="../page-fold.js"></script>
 </body>
 </html>

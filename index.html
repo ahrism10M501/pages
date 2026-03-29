@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
+<body data-page="0">
   <button id="sidebar-toggle" aria-label="메뉴">☰</button>
   <aside id="sidebar">
     <div class="sidebar-icons">
@@ -21,6 +21,7 @@
       <p class="panel-placeholder" style="display:none">준비 중</p>
     </div>
   </aside>
+  <div id="page-content">
   <main class="container">
     <!-- Post Graph section -->
     <section id="post-graph">
@@ -99,6 +100,7 @@
       
     </div>
   </footer>
+  </div><!-- /#page-content -->
 
   <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
@@ -146,18 +148,6 @@
             pulseRandom(); // 레이아웃 완료 직후 즉시 실행
           });
 
-          function animateSize(node, fromW, fromH, toW, toH, ms, onDone) {
-            var start = performance.now();
-            function tick(now) {
-              var t = Math.min((now - start) / ms, 1);
-              var e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-              node.style({ width: fromW + (toW - fromW) * e, height: fromH + (toH - fromH) * e });
-              if (t < 1) requestAnimationFrame(tick);
-              else if (onDone) onDone();
-            }
-            requestAnimationFrame(tick);
-          }
-
           function pulseRandom() {
             if (Object.keys(origSizes).length === 0) return;
             var nodes = cy.nodes().toArray();
@@ -167,11 +157,18 @@
               var orig = origSizes[node.id()];
               if (!orig) return;
               var sw = orig.w * SCALE, sh = orig.h * SCALE;
-              animateSize(node, orig.w, orig.h, sw, sh, GROW_MS, function () {
-                setTimeout(function () {
-                  animateSize(node, sw, sh, orig.w, orig.h, SHRINK_MS);
-                }, HOLD_MS);
-              });
+              // node.animate() 사용 — RAF 루프 없이 Cytoscape 내부 최적화 렌더링
+              node.animate(
+                { style: { width: sw, height: sh } },
+                { duration: GROW_MS, easing: 'ease-in-out-quad', complete: function () {
+                  setTimeout(function () {
+                    node.animate(
+                      { style: { width: orig.w, height: orig.h } },
+                      { duration: SHRINK_MS, easing: 'ease-in-out-quad' }
+                    );
+                  }, HOLD_MS);
+                }}
+              );
             });
           }
           setInterval(pulseRandom, INTERVAL_MS);
@@ -326,5 +323,6 @@
 })();
 </script>
   <script src="./sidebar.js"></script>
+  <script src="./page-fold.js"></script>
 </body>
 </html>

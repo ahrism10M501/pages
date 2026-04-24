@@ -37,4 +37,4 @@ MIN_TAGS: int = 2
 
 # Supernode clustering
 MIN_POSTS_FOR_SUPERNODES: int = 30
-SUPERNODE_DISTANCE_THRESHOLD: float = 0.5
+SUPERNODE_DISTANCE_THRESHOLD: float = 0.5  # cosine distance in [0, 2]; lower = tighter clusters

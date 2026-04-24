@@ -51,6 +51,7 @@ class SupernodeData(TypedDict):
     tags: list[str]
 
 
+# Implementation detail: split required keys so GraphData can declare optional ones.
 class _GraphDataRequired(TypedDict):
     nodes: list[GraphNode]
     edges: list[GraphEdge]

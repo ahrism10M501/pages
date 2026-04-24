@@ -56,6 +56,8 @@ def run_pipeline(force: bool = False, posts_only: bool = False) -> RunState:
     Stage 4 (skip if posts_only): Build graph.json from embeddings + TF-IDF
     Stage 5 (skip if posts_only): Auto-tag tagless posts, save tags.json
     Stage 6: Save posts.json (with updated tags from stage 5)
+    Stage 7 (skip if posts_only): Re-build graph.json with normalised tags
+    Stage 8 (skip if posts_only): Build supernodes → inject into graph.json
     """
     # Stage 1
     print("포스트 스캔 중...")

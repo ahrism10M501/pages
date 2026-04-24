@@ -6,6 +6,7 @@
   <title>Twinkle — Ahrism</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <link rel="stylesheet" href="../style.css">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body data-page="2">
   <aside id="sidebar">
@@ -25,9 +26,12 @@
   <div id="page-content">
   <main class="container">
     <div class="twinkle-layout">
-      <div class="twinkle-feed" id="twinkle-feed">
-        <div class="label">✦ TWINKLE</div>
-        <p style="color:#555;font-size:0.85rem">로딩 중...</p>
+      <div class="twinkle-feed-col">
+        <div id="mobile-tags" class="twinkle-mobile-tags"></div>
+        <div class="twinkle-feed" id="twinkle-feed">
+          <div class="label">✦ TWINKLE</div>
+          <p style="color:#555;font-size:0.85rem">로딩 중...</p>
+        </div>
       </div>
       <div class="twinkle-archive" id="twinkle-archive">
         <div class="twinkle-archive-resize" id="archive-resize-handle">⠿</div>

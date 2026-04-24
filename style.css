@@ -755,3 +755,69 @@ body {
   padding: 0.3rem 0.6rem;
   text-align: left;
 }
+
+/* ── B-1: Matplotlib output dark mode sync ────────────────────────── */
+.cell-output-image {
+  filter: invert(0.88) hue-rotate(180deg) saturate(0.9);
+  max-width: 100%;
+  display: block;
+  margin: 0.5rem 0;
+}
+
+/* ── B-2: Terminal-style notebook loading ─────────────────────────── */
+.nb-loading {
+  padding: 0.75rem 0;
+  transition: opacity 0.25s ease;
+  font-family: monospace;
+  font-size: 0.8rem;
+  line-height: 2;
+}
+.nb-loading-line {
+  display: flex;
+  gap: 0.55rem;
+  align-items: baseline;
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.nb-loading-line.in { opacity: 1; transform: none; }
+.nb-lp { font-size: 0.72rem; letter-spacing: 0.3px; flex-shrink: 0; }
+.nb-lp--info { color: #4a62ff; }
+.nb-lp--ok   { color: #00cc66; }
+.nb-loading-text { color: #777; }
+.nb-loading-text b { color: #aaa; font-weight: 400; }
+.nb-loading-cursor {
+  display: inline-block;
+  width: 6px;
+  height: 0.85em;
+  background: #dc00c9;
+  vertical-align: text-bottom;
+  margin-left: 2px;
+  animation: nb-cursor-blink 1s step-end infinite;
+}
+@keyframes nb-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.nb-loading-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-left: 4.5rem;
+}
+.nb-loading-bar-track {
+  width: 120px;
+  height: 2px;
+  background: #1a1a1a;
+}
+.nb-loading-bar-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #4a62ff, #dc00c9);
+  transition: width 0.25s ease;
+}
+.nb-loading-bar-pct {
+  font-size: 0.65rem;
+  color: #444;
+  min-width: 2rem;
+}

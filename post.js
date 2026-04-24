@@ -62,7 +62,7 @@ function renderNotebook(nb) {
           } else if (out.output_type === 'display_data' || out.output_type === 'execute_result') {
             const data = out.data || {};
             if (data['image/png']) {
-              html += `<img src="data:image/png;base64,${data['image/png']}" style="max-width:100%;display:block;margin:0.5rem 0">`;
+              html += `<img class="cell-output-image" src="data:image/png;base64,${data['image/png']}">`;
             } else if (data['image/svg+xml']) {
               const svg = Array.isArray(data['image/svg+xml']) ? data['image/svg+xml'].join('') : data['image/svg+xml'];
               html += `<div class="nb-svg">${svg}</div>`;
@@ -85,6 +85,55 @@ function renderNotebook(nb) {
     }
   }
   return parts.join('\n');
+}
+
+function createNbLoader(container) {
+  const el = document.createElement('div');
+  el.className = 'nb-loading';
+  container.innerHTML = '';
+  container.appendChild(el);
+
+  let barFill = null, barPct = null, barTimer = null;
+
+  function step(cls, text, { cursor = false, progress = false } = {}) {
+    const line = document.createElement('div');
+    line.className = 'nb-loading-line';
+    const cur = cursor ? '<span class="nb-loading-cursor"></span>' : '';
+    line.innerHTML = `<span class="nb-lp nb-lp--${cls}">[${cls.toUpperCase()}]</span><span class="nb-loading-text">${text}${cur}</span>`;
+    el.appendChild(line);
+    requestAnimationFrame(() => requestAnimationFrame(() => line.classList.add('in')));
+
+    if (progress) {
+      const bar = document.createElement('div');
+      bar.className = 'nb-loading-bar';
+      bar.innerHTML = `<div class="nb-loading-bar-track"><div class="nb-loading-bar-fill"></div></div><span class="nb-loading-bar-pct">0%</span>`;
+      el.appendChild(bar);
+      barFill = bar.querySelector('.nb-loading-bar-fill');
+      barPct  = bar.querySelector('.nb-loading-bar-pct');
+      let p = 0;
+      barTimer = setInterval(() => {
+        p = Math.min(92, p + Math.random() * 12 + 4);
+        barFill.style.width = p + '%';
+        barPct.textContent  = Math.floor(p) + '%';
+        if (p >= 92) clearInterval(barTimer);
+      }, 55);
+    }
+  }
+
+  function finishBar() {
+    if (barTimer) clearInterval(barTimer);
+    if (barFill) barFill.style.width = '100%';
+    if (barPct)  barPct.textContent  = '100%';
+  }
+
+  function finish(cb) {
+    setTimeout(() => {
+      el.style.opacity = '0';
+      setTimeout(() => { el.remove(); if (cb) cb(); }, 250);
+    }, 500);
+  }
+
+  return { step, finishBar, finish };
 }
 
 (async () => {
@@ -133,20 +182,41 @@ function renderNotebook(nb) {
   }
 
   if (post && post.notebook) {
-    // JupyterLite 실행 버튼 삽입
     const labUrl = `../../lab/index.html?path=posts/${slug}/content.ipynb`;
     document.getElementById('post-header').insertAdjacentHTML('afterend',
       `<div class="nb-open-bar"><a href="${labUrl}" class="nb-open-btn" target="_blank" rel="noopener">▶ JupyterLite에서 실행</a></div>`
     );
-    // 노트북 fetch 및 정적 렌더링
+    const contentEl = document.getElementById('post-content');
+    const loader = createNbLoader(contentEl);
+    loader.step('info', 'Fetching <b>content.ipynb</b>...', { progress: true });
+
     const nbRes = await fetch('./content.ipynb');
+    loader.finishBar();
+
     if (nbRes.ok) {
       const nb = await nbRes.json();
-      document.getElementById('post-content').innerHTML = renderNotebook(nb);
-      document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-      mermaid.run();
+      const cellCount = nb.cells.filter(c =>
+        (Array.isArray(c.source) ? c.source.join('') : (c.source || '')).trim()
+      ).length;
+      loader.step('ok', `Parsed — <b>${cellCount}</b> cells`);
+
+      const rendered = renderNotebook(nb);
+      const imgCount = (rendered.match(/class="cell-output-image"/g) || []).length;
+      loader.step('ok', 'Rendered');
+      if (imgCount > 0) {
+        loader.step('info', `Dark-sync → <b>${imgCount}</b> image output${imgCount > 1 ? 's' : ''}`);
+      }
+      loader.step('ok', 'Ready ●', { cursor: true });
+
+      loader.finish(() => {
+        contentEl.innerHTML = rendered;
+        document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
+        mermaid.run();
+      });
     } else {
-      document.getElementById('post-content').innerHTML = '<p>노트북을 불러올 수 없습니다.</p>';
+      loader.finish(() => {
+        contentEl.innerHTML = '<p>노트북을 불러올 수 없습니다.</p>';
+      });
     }
   } else if (mdRes.ok) {
     const md = await mdRes.text();

@@ -36,6 +36,17 @@ function initGraph(container, graphData, options = {}) {
     });
   }
 
+  // 슈퍼노드 추가 (supernodes 배열이 있을 때만)
+  if (Array.isArray(graphData.supernodes) && graphData.supernodes.length > 0) {
+    for (const sn of graphData.supernodes) {
+      elements.push({
+        group: 'nodes',
+        data: { id: sn.id, label: sn.label, tags: sn.tags, isSupernode: true },
+        classes: 'supernode',
+      });
+    }
+  }
+
   const cy = cytoscape({
     container: container,
     elements: elements,
@@ -140,6 +151,29 @@ function initGraph(container, graphData, options = {}) {
           'width': 'mapData(weight, 0.3, 1.0, 2, 7)',
         },
       },
+      {
+        selector: 'node.supernode',
+        style: {
+          'shape': 'diamond',
+          'width': 48,
+          'height': 48,
+          'background-color': '#1a0018',
+          'border-color': '#dc00c9',
+          'border-width': 2,
+          'label': 'data(label)',
+          'font-size': '11px',
+          'color': '#dc00c9',
+          'text-valign': 'center',
+          'text-halign': 'center',
+          'text-wrap': 'ellipsis',
+          'text-max-width': '60px',
+          'z-index': 10,
+        },
+      },
+      {
+        selector: 'node.supernode.dimmed',
+        style: { 'opacity': 0.2 },
+      },
     ],
     layout: {
       name: 'fcose',
@@ -157,11 +191,19 @@ function initGraph(container, graphData, options = {}) {
   });
 
   // 노드 클릭 이벤트
-  if (options.onNodeClick) {
-    cy.on('tap', 'node', function (evt) {
-      options.onNodeClick(evt.target.data('id'));
-    });
-  }
+  cy.on('tap', 'node', function (evt) {
+    const node = evt.target;
+    if (node.hasClass('supernode')) {
+      const tags = node.data('tags');
+      if (Array.isArray(tags) && tags.length > 0) {
+        window.location.href = '/blog/index.html?tags=' + tags.map(encodeURIComponent).join(',');
+      }
+      return;
+    }
+    if (options.onNodeClick) {
+      options.onNodeClick(node.data('id'));
+    }
+  });
 
   cy.on('layoutstop', function () {
     cy.fit(undefined, 40);
@@ -172,6 +214,8 @@ function initGraph(container, graphData, options = {}) {
   const defaultNode = options.defaultHighlightNodeId
     ? cy.getElementById(options.defaultHighlightNodeId) : null;
   setupHoverHighlight(cy, threshold, defaultNode && defaultNode.length > 0 ? defaultNode : null);
+
+  setupEdgeTooltip(cy, container);
 
   return cy;
 }
@@ -311,6 +355,7 @@ function setupHoverHighlight(cy, threshold, defaultHighlightNode) {
 
   cy.on('mouseover', 'node', function (evt) {
     if (cy._searchHighlightActive) return;
+    if (evt.target.hasClass('supernode')) return;
     // 호버 시 transition 일시 비활성화 (크기 변화 방지)
     cy.style().selector('node').style('transition-duration', 0);
     applyNodeHighlight(cy, evt.target, threshold, 'hovered');
@@ -339,7 +384,7 @@ function setupHoverHighlight(cy, threshold, defaultHighlightNode) {
  * @param {Object} cy - Cytoscape instance
  */
 function applyDepthEffect(cy) {
-  const nodes = cy.nodes();
+  const nodes = cy.nodes().filter(n => !n.hasClass('supernode'));
   if (nodes.length === 0) return;
 
   // weighted degree (엣지 weight 합) 기반 — raw degree보다 분별력 높음
@@ -369,3 +414,45 @@ function applyDepthEffect(cy) {
   });
 }
 
+/**
+ * Show a tooltip near the mouse with shared tags when hovering an edge.
+ * @param {Object} cy - Cytoscape instance
+ * @param {HTMLElement} container - Graph container DOM element
+ */
+function setupEdgeTooltip(cy, container) {
+  const tip = document.createElement('div');
+  tip.id = 'edge-tooltip';
+  tip.style.cssText = [
+    'position:fixed',
+    'display:none',
+    'background:#111111',
+    'border:1px solid #1e1e1e',
+    'color:#cccccc',
+    'font-size:11px',
+    'padding:4px 8px',
+    'pointer-events:none',
+    'z-index:9999',
+    'white-space:nowrap',
+  ].join(';');
+  document.body.appendChild(tip);
+
+  cy.on('mouseover', 'edge', function (evt) {
+    const edge = evt.target;
+    const srcTags = new Set(edge.source().data('tags') || []);
+    const tgtTags = (edge.target().data('tags') || []).filter(t => srcTags.has(t));
+    if (tgtTags.length === 0) return;
+
+    tip.textContent = tgtTags.map(t => '#' + t).join('  ');
+    tip.style.display = 'block';
+  });
+
+  cy.on('mousemove', 'edge', function (evt) {
+    if (tip.style.display === 'none') return;
+    tip.style.left = (evt.originalEvent.clientX + 12) + 'px';
+    tip.style.top = (evt.originalEvent.clientY - 8) + 'px';
+  });
+
+  cy.on('mouseout', 'edge', function () {
+    tip.style.display = 'none';
+  });
+}

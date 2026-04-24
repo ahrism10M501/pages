@@ -59,10 +59,11 @@ def test_cluster_tags_groups_similar_tags(tmp_path):
     with patch.object(config, "SUPERNODE_DISTANCE_THRESHOLD", 0.3):
         supernodes = _cluster_tags(tag_cache, posts)
 
-    assert len(supernodes) >= 1
-    all_tags = [t for s in supernodes for t in s["tags"]]
-    assert set(all_tags) <= {"딥러닝", "신경망", "하드웨어", "FPGA"}
-    # 각 슈퍼노드는 id, label, tags를 가짐
+    assert len(supernodes) == 2
+    ai_sn = next(s for s in supernodes if "딥러닝" in s["tags"] or "신경망" in s["tags"])
+    assert set(ai_sn["tags"]) == {"딥러닝", "신경망"}
+    hw_sn = next(s for s in supernodes if "하드웨어" in s["tags"] or "FPGA" in s["tags"])
+    assert set(hw_sn["tags"]) == {"하드웨어", "FPGA"}
     for s in supernodes:
         assert "id" in s and "label" in s and "tags" in s
         assert isinstance(s["tags"], list)
@@ -102,3 +103,21 @@ def test_build_supernodes_runs_clustering_above_threshold(tmp_path):
     assert len(result) >= 1
     data = json.loads(graph_path.read_text(encoding="utf-8"))
     assert len(data["supernodes"]) == len(result)
+
+
+def test_cluster_tags_skips_zero_vector_embeddings():
+    """영벡터 임베딩을 가진 태그는 clustering에서 제외되어 ValueError가 발생하지 않는다."""
+    from pipeline.supernode_builder import _cluster_tags
+
+    tag_cache = {
+        "딥러닝": [1.0, 0.0, 0.0],
+        "신경망": [0.95, 0.05, 0.0],
+        "zero_tag": [0.0, 0.0, 0.0],  # 영벡터
+    }
+    posts = _make_posts(3)
+
+    with patch.object(config, "SUPERNODE_DISTANCE_THRESHOLD", 0.3):
+        supernodes = _cluster_tags(tag_cache, posts)  # must not raise
+
+    all_tags = [t for s in supernodes for t in s["tags"]]
+    assert "zero_tag" not in all_tags

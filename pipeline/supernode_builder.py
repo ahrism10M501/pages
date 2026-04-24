@@ -51,9 +51,14 @@ def _cluster_tags(
     if len(known_tags) < 2:
         return []
 
-    embeddings = np.array([tag_cache[t] for t in known_tags], dtype=np.float32)
-    # cosine distance를 위해 L2 정규화
-    embeddings = normalize(embeddings, norm="l2")
+    raw = np.array([tag_cache[t] for t in known_tags], dtype=np.float32)
+    # 영벡터는 cosine distance 계산 불가 → 제거
+    norms = np.linalg.norm(raw, axis=1)
+    valid = norms > 0
+    known_tags = [t for t, ok in zip(known_tags, valid) if ok]
+    if len(known_tags) < 2:
+        return []
+    embeddings = normalize(raw[valid], norm="l2")
 
     model = AgglomerativeClustering(
         n_clusters=None,
@@ -69,7 +74,7 @@ def _cluster_tags(
 
     supernodes: list[SupernodeData] = []
     for cluster_id, tags in sorted(clusters.items()):
-        label = max(tags, key=lambda t: tag_freq[t])
+        label = max(tags, key=lambda t: (tag_freq[t], t))
         supernodes.append({
             "id": f"supernode-{cluster_id}",
             "label": label,

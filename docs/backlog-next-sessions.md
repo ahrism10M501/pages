@@ -45,3 +45,8 @@ About 페이지의 기술 스택(Python, PyTorch, Verilog 등) 클릭 → 관련
 - `index.html` About 섹션의 기술 스택 항목에 `data-tag` 속성 추가
 - 클릭 시 `/blog/index.html?tags=<skill>` 이동 (URL 파라미터 기능 활용)
 - `projects.json`에도 `tags` 필드 추가해 프로젝트 카드 필터링 연동
+
+
+
+
+프로필 사진: about/profile.jpg 파일 추가 후 <div class="about-profile-placeholder"> → <img class="about-profile-img" src="./profile.jpg"> 로 교체

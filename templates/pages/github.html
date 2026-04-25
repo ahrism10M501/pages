@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}GitHub — Ahrism{% endblock %}
+
+{% block content %}
+<main class="container">
+  <div class="editorial-header">
+    <span class="label--slash">GitHub</span>
+    <h1>Repositories</h1>
+  </div>
+  <div id="github-sources"></div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ root }}src/github.js" data-sources="{{ root }}github-sources.json"></script>
+{% endblock %}

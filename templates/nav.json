@@ -1,0 +1,7 @@
+[
+  {"id": "home",    "label": "Home",    "icon": "⌂", "href": ""},
+  {"id": "about",   "label": "About",   "icon": "◉", "href": "about/"},
+  {"id": "blog",    "label": "Blog",    "icon": "≡", "href": "blog/"},
+  {"id": "twinkle", "label": "Twinkle", "icon": "✦", "href": "twinkle/"},
+  {"id": "github",  "label": "GitHub",  "icon": "⬡", "href": "github/"}
+]

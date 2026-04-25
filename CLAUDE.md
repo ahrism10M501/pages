@@ -1,6 +1,6 @@
 # ahrism-pages
 
-GitHub Pages 포트폴리오 + 블로그. 순수 HTML/JS, 서버 없음.
+GitHub Pages 포트폴리오 + 블로그. 순수 HTML/JS, 서버 없음. 빌드 단계는 Jinja2 템플릿 렌더링뿐.
 
 ## 스택
 
@@ -8,51 +8,62 @@ GitHub Pages 포트폴리오 + 블로그. 순수 HTML/JS, 서버 없음.
 - **Markdown 렌더링**: marked.js (CDN) + highlight.js (CDN)
 - **그래프**: Cytoscape.js (CDN) — 포스트 유사도 그래프 + 서브그래프
 - **ML**: sentence-transformers (`jhgan/ko-sroberta-multitask`) — 임베딩 · 태그 추천
+- **빌드**: Jinja2 (Python) — `templates/` → 정적 HTML
 - **데이터**: `blog/posts.json`, `blog/graph.json`, `blog/tags.json`, `projects.json`
 
 ## 파일 구조
 
 ```
-index.html              # 랜딩 (포스트 그래프 → About 소개)
-style.css               # 다크 테마 CSS 변수 + 컴포넌트
-app.js                  # 공유 JS: fetchPosts / renderPostList / renderProjectCards
-post.js                 # 포스트 페이지 로직 (frontmatter 파싱 · 렌더링)
-graph.js                # Cytoscape.js 그래프: 호버 강조 · 서브그래프 · BFS 탐색
-projects.json           # 프로젝트 카드 데이터
+templates/              # Jinja2 소스 (편집 대상)
+  base.html             # <head>+사이드바+content block+footer+scripts 공통 스켈레톤
+  partials/
+    sidebar.html        # nav.json 기반 자동 active
+    footer.html         # 사회 링크
+  pages/
+    home.html, about.html, blog.html, twinkle.html, github.html, post.html
+  nav.json              # 사이드바 항목 (항목 추가는 여기 한 곳)
+
+src/                    # JS 모듈 (편집 대상)
+  sidebar.js            # 사이드바 토글/네비
+  page-fold.js          # 페이지 입장 애니메이션
+  utils.js              # formatPostDate, stripFrontmatter
+  posts.js              # fetchPosts, fetchGraph, renderPostList, search/filter
+  projects.js           # renderProjectCards
+  graph.js              # Cytoscape.js 그래프 렌더링
+  post.js               # 포스트 페이지: marked + KaTeX + highlight + mermaid
+  twinkle-feed.js       # 트윙클 피드/아카이브 (home + twinkle 공유)
+  home-graph.js         # 홈 페이지 그래프: 펄스, pull-to-expand, 줌 프리셋
+  github.js             # /github/ 페이지 repos 목록
+
+style.css               # 다크 테마 CSS
+projects.json, github-sources.json, ...
+
+# 빌드 산출물 (build_site.py가 생성, git에 커밋됨):
+index.html, about/index.html, blog/index.html, twinkle/index.html,
+github/index.html, posts/<slug>/index.html
 
 blog/
-  index.html            # 전체 블로그 목록 (태그 필터 · 뷰 토글)
-  posts.json            # 포스트 메타데이터 배열 (최신순, 자동생성)
-  graph.json            # 포스트 유사도 그래프 (자동생성)
-  tags.json             # 정규화된 태그 목록 (자동생성)
-  .post_cache.json      # 포스트 임베딩 캐시 (자동생성, gitignore)
-  .tag_cache.json       # 태그 임베딩 캐시 (자동생성, gitignore)
+  posts.json, graph.json, tags.json    # 자동생성 (post_update.py)
+  .post_cache.json, .tag_cache.json    # 임베딩 캐시 (gitignore)
 
-posts/
-  _template/index.html  # 새 포스트 만들 때 복사하는 템플릿 (서브그래프 포함)
-  <slug>/
-    index.html          # 템플릿 복사본
-    content.md          # YAML frontmatter + 글 내용
-    images/             # 이미지 (선택)
+posts/<slug>/
+  content.md            # YAML frontmatter + 본문 (또는 content.ipynb)
+  index.html            # 빌드 산출물
+  images/
 
 scripts/
-  post_update.py        # 통합 빌드 오케스트레이터
-  posts_list_update.py  # 포스트 스캔 · frontmatter 파싱 · posts.json 업데이트
-  build_graph.py        # 임베딩 · TF-IDF · graph.json 생성 (캐시 지원)
-  auto_tag.py           # 태그 추천 + 생성 + 임베딩 캐시 관리
-  tag_vocabulary.json   # 시드 태그 목록 (30개, vocabulary matching 소스)
-  test_build_graph.py   # 그래프 빌드 테스트
-  test_auto_tag.py      # 자동 태그 테스트
+  build_site.py         # NEW: Jinja2 템플릿 → HTML 렌더러
+  post_update.py        # 오케스트레이터 (posts.json + graph + 태그 + build_site)
+  posts_list_update.py, build_graph.py, auto_tag.py, twinkle_update.py, ...
 
-docs/                   # 설계 문서 · 구현 계획
+docs/                   # 설계 문서
 ```
 
 ## 새 포스트 추가
 
-1. 폴더 + 템플릿 생성:
+1. 폴더 + content.md만 작성 (별도 index.html 복사 불필요):
 ```bash
 mkdir -p posts/<slug>/images
-cp posts/_template/index.html posts/<slug>/index.html
 ```
 
 2. `posts/<slug>/content.md` 작성 (YAML frontmatter 필수):
@@ -67,16 +78,21 @@ summary: "한 줄 요약 (없으면 본문에서 자동 추출)"
 본문 내용...
 ```
 
-3. 빌드:
+3. 빌드 (포스트 메타 + 그래프 + 정적 HTML 모두 갱신):
 ```bash
 cd scripts && uv run python post_update.py
 ```
 
 | 옵션 | 설명 |
 |------|------|
-| (없음) | 증분 업데이트 — 바뀐 글만 임베딩 재계산 + 태그 할당 |
-| `--posts-only` | posts.json만 업데이트 (ML 모델 로딩 없음) |
+| (없음) | 증분 업데이트 — 바뀐 글만 임베딩 재계산 + 태그 할당 + HTML 빌드 |
+| `--posts-only` | posts.json만 업데이트 (ML 모델 로딩 없음) + HTML 빌드 |
 | `--force` | 캐시 무시, 전체 임베딩 재계산 |
+
+HTML만 다시 렌더링하려면:
+```bash
+cd scripts && uv run python build_site.py
+```
 
 ### 개별 스크립트 CLI
 

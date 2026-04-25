@@ -1,0 +1,8 @@
+<button id="sidebar-toggle" aria-label="메뉴">☰</button>
+<aside id="sidebar">
+  <div class="sidebar-icons">
+    {% for item in nav %}
+    <button class="sidebar-btn{% if item.id == current_page %} active{% endif %}" data-label="{{ item.label }}" data-href="{{ root }}{{ item.href }}">{{ item.icon }}</button>
+    {% endfor %}
+  </div>
+</aside>

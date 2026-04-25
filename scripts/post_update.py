@@ -29,6 +29,7 @@ from auto_tag import (
     load_tag_cache, normalize_tag, save_tags,
 )
 from twinkle_update import update_twinkles_json
+from build_site import main as build_site
 
 
 def main():
@@ -95,6 +96,9 @@ def main():
     # twinkle (ML 없음, 항상 실행)
     twinkle_changed = update_twinkles_json()
     print("twinkles.json 업데이트됨" if twinkle_changed else "twinkles.json 변경 없음")
+
+    # 정적 사이트 빌드 (Jinja2 템플릿 → HTML)
+    build_site()
 
 
 if __name__ == "__main__":

@@ -68,23 +68,14 @@
     "slug": "python-performance",
     "title": "Python 성능 최적화 실전 가이드",
     "date": "2026-03-21",
-    "tags": [
-      "python",
-      "numpy",
-      "벡터",
-      "numba",
-      "멀티프로세싱"
-    ],
+    "tags": [],
     "summary": "NumPy 벡터화, Numba JIT, 멀티프로세싱으로 Python 속도 끌어올리기"
   },
   {
     "slug": "simple_ALU",
     "title": "초간단 ALU 만들기",
     "date": "2025-11-20",
-    "tags": [
-      "alu",
-      "논리게이트"
-    ],
+    "tags": [],
     "summary": "간단한 ALU를 논리게이트를 사용하여 직접 만들어 보았습니다"
   }
 ]

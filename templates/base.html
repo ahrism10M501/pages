@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Ahrism{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <link rel="stylesheet" href="{{ root }}style.css">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  {% include "partials/sidebar.html" %}
+  <div id="page-content">
+    {% block content %}{% endblock %}
+    {% if not hide_footer %}{% include "partials/footer.html" %}{% endif %}
+  </div>
+  {% block scripts %}{% endblock %}
+  <script src="{{ root }}src/sidebar.js"></script>
+  <script src="{{ root }}src/page-fold.js"></script>
+</body>
+</html>

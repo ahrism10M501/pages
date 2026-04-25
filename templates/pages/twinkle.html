@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Twinkle — Ahrism{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<main class="container">
+  <div class="twinkle-layout">
+    <div class="twinkle-feed-col">
+      <div id="mobile-tags" class="twinkle-mobile-tags"></div>
+      <div class="twinkle-feed" id="twinkle-feed">
+        <div class="label">✦ TWINKLE</div>
+        <p style="color:#555;font-size:0.85rem">로딩 중...</p>
+      </div>
+    </div>
+    <div class="twinkle-archive" id="twinkle-archive">
+      <div class="twinkle-archive-resize" id="archive-resize-handle">⠿</div>
+      <div class="twinkle-archive-inner">
+        <div class="label">ARCHIVE</div>
+        <div class="archive-tag-chips" id="archive-tags"></div>
+        <div class="archive-list" id="archive-list"></div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ root }}src/twinkle-feed.js"></script>
+<script>
+initTwinkleFeed({
+  twinklesUrl: '{{ root }}twinkle/twinkles.json',
+  sessionKey: 'twinkle-expanded',
+  ids: {
+    feed: 'twinkle-feed',
+    archive: 'twinkle-archive',
+    archiveTags: 'archive-tags',
+    archiveList: 'archive-list',
+    mobileTags: 'mobile-tags',
+    resizeHandle: 'archive-resize-handle',
+    prev: 'nav-prev',
+    next: 'nav-next',
+    cardPrefix: 'card-',
+  },
+  useHash: true,
+  prependLabel: true,
+});
+</script>
+{% endblock %}

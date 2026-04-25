@@ -1,25 +1,10 @@
-<!DOCTYPE html>
-<html lang="ko" data-theme="dark">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ahrism</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
-  <link rel="stylesheet" href="./style.css">
+{% extends "base.html" %}
+{% block title %}Ahrism{% endblock %}
+{% block head_extra %}
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-</head>
-<body>
-<button id="sidebar-toggle" aria-label="메뉴">☰</button>
-<aside id="sidebar">
-  <div class="sidebar-icons">
-    <button class="sidebar-btn active" data-label="Home" data-href="./">⌂</button>
-    <button class="sidebar-btn" data-label="About" data-href="./about/">◉</button>
-    <button class="sidebar-btn" data-label="Blog" data-href="./blog/">≡</button>
-    <button class="sidebar-btn" data-label="Twinkle" data-href="./twinkle/">✦</button>
-    <button class="sidebar-btn" data-label="GitHub" data-href="./github/">⬡</button>
-  </div>
-</aside>
-  <div id="page-content">
+{% endblock %}
+
+{% block content %}
 <main class="container">
   <section id="post-graph">
     <div id="graph-hint" style="text-align:center;font-size:0.65rem;color:#2a2a2a;letter-spacing:2px;padding:0.3rem 0;user-select:none">↑ PULL</div>
@@ -64,7 +49,7 @@
     <div id="projects-container"></div>
 
     <p style="margin-top:1.5rem;font-size:0.85rem">
-      <a href="./about/" class="secondary">전체 소개 보기 →</a>
+      <a href="{{ root }}about/" class="secondary">전체 소개 보기 →</a>
     </p>
   </section>
 
@@ -88,40 +73,28 @@
     </div>
   </section>
 </main>
-<footer class="container site-footer">
-  <div class="site-footer-credit">Built with PicoCSS &amp; Cytoscape.js</div>
-  <div class="site-footer-row">
-    <div class="site-footer-col"><small>&copy; 2026 ahrism</small></div>
-    <div class="site-footer-col site-footer-top">
-      <a href="#" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;" class="secondary">↑ Top</a>
-    </div>
-    <div class="site-footer-col site-footer-links">
-      <a href="https://github.com/ahrism10M501" target="_blank" rel="noopener noreferrer" class="secondary">GitHub</a>
-      <a href="https://www.youtube.com/@ahrism-3475" target="_blank" rel="noopener noreferrer" class="secondary">YouTube</a>
-      <a href="mailto:l.all.means@gmail.com" class="secondary">Contact</a>
-    </div>
-  </div>
-</footer>
-  </div>
+{% endblock %}
+
+{% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
-<script src="./src/utils.js"></script>
-<script src="./src/posts.js"></script>
-<script src="./src/projects.js"></script>
-<script src="./src/graph.js"></script>
+<script src="{{ root }}src/utils.js"></script>
+<script src="{{ root }}src/posts.js"></script>
+<script src="{{ root }}src/projects.js"></script>
+<script src="{{ root }}src/graph.js"></script>
 <script>
-fetch('./projects.json')
+fetch('{{ root }}projects.json')
   .then(r => r.ok ? r.json() : [])
   .then(projects => renderProjectCards(projects, document.getElementById('projects-container')))
   .catch(() => {});
 </script>
-<script src="./src/home-graph.js" data-graph="./blog/graph.json" data-posts="./blog/posts.json" data-twinkles="./twinkle/twinkles.json" data-posts-base="./posts/"></script>
-<script src="./src/twinkle-feed.js"></script>
+<script src="{{ root }}src/home-graph.js" data-graph="{{ root }}blog/graph.json" data-posts="{{ root }}blog/posts.json" data-twinkles="{{ root }}twinkle/twinkles.json" data-posts-base="{{ root }}posts/"></script>
+<script src="{{ root }}src/twinkle-feed.js"></script>
 <script>
 initTwinkleFeed({
-  twinklesUrl: './twinkle/twinkles.json',
+  twinklesUrl: '{{ root }}twinkle/twinkles.json',
   sessionKey: 'twinkle-home-expanded',
   ids: {
     feed: 'twinkle-home-feed',
@@ -138,7 +111,4 @@ initTwinkleFeed({
   prependLabel: false,
 });
 </script>
-  <script src="./src/sidebar.js"></script>
-  <script src="./src/page-fold.js"></script>
-</body>
-</html>
+{% endblock %}

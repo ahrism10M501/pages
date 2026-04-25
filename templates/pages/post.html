@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Loading... — ahrism{% endblock %}
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+{% endblock %}
+
+{% block content %}
+<main class="container">
+  <a href="{{ root }}blog/" style="font-size:0.85rem;color:#444">← Blog</a>
+  <div id="post-header" class="editorial-header">
+    <div class="post-meta" id="post-meta"></div>
+    <h1 id="post-title"></h1>
+  </div>
+  <article id="post-content" class="post-content"></article>
+  <section id="related-graph-section" style="display:none">
+    <div class="label">Related Posts</div>
+    <div class="depth-control">
+      <label for="depth-slider">깊이:</label>
+      <input type="range" id="depth-slider" min="2" max="5" value="2">
+      <span class="depth-value" id="depth-value">2</span>
+    </div>
+    <div class="graph-container subgraph" id="subgraph-container"></div>
+  </section>
+</main>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ root }}src/utils.js"></script>
+<script src="{{ root }}src/posts.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
+<script src="{{ root }}src/graph.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script src="{{ root }}src/post.js"></script>
+{% endblock %}

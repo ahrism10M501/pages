@@ -3,6 +3,8 @@
 .claude/
 .worktrees/
 CLAUDE.md
+.venv/
+.pytest_cache/
 
 # Python
 __pycache__/

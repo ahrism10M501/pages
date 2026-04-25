@@ -24,6 +24,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Build site (Jinja2 templates → HTML)
+        # ML steps (posts.json / graph.json / tags.json) are regenerated locally
+        # by the author and committed; CI only renders templates.
+        run: |
+          cd scripts
+          uv run --with jinja2 python build_site.py
+
       - name: Install JupyterLite
         run: pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server
 
@@ -43,9 +53,9 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p _site
-          # Static site files (루트에 있는 파일/폴더 복사)
-          for item in index.html style.css app.js post.js graph.js sidebar.js page-fold.js \
-                      blog posts github projects.json github-sources.json .nojekyll; do
+          # Built HTML + static assets. JS modules live under src/.
+          for item in index.html style.css src about blog twinkle github posts \
+                      projects.json github-sources.json .nojekyll; do
             [ -e "$item" ] && cp -r "$item" _site/ || true
           done
           # JupyterLite 출력

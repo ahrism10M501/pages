@@ -141,6 +141,7 @@
       if (!section.classList.contains('graph-fullscreen')) return;
       if (e.key === 'Escape') {
         close();
+        e.stopPropagation();
         return;
       }
       if (e.key === 'Tab') {

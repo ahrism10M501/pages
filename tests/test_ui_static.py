@@ -38,6 +38,11 @@ def test_pink_is_not_used_as_general_state_color():
     assert css.count("#dc00c9") <= 4
 
 
+def test_stale_info_color_channels_not_in_css():
+    css = read("style.css")
+    assert "74, 98, 255" not in css, "stale #4a62ff rgba channels found — use color-mix(var(--color-info)) instead"
+
+
 def test_semantic_color_tokens_use_valid_hex_values():
     css = read("style.css")
     root_match = re.search(r":root\s*\{(?P<body>.*?)\n\}", css, re.DOTALL)

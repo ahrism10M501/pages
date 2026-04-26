@@ -79,7 +79,10 @@
     }
 
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') setMobileDrawer(false);
+      if (e.key === 'Escape') {
+        if (document.body.classList.contains('graph-modal-open')) return;
+        setMobileDrawer(false);
+      }
     });
   }
 })();

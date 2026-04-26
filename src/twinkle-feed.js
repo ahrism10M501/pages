@@ -73,11 +73,11 @@
       const body = marked.parse(rawBody);
       const tagsHtml = t.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join(' ');
       const moreBtn = needsTrunc
-        ? `<button class="twinkle-more-btn" data-slug="${t.slug}">${isExpanded ? '▲ 접기' : '▼ 더보기'}</button>`
+        ? `<button class="twinkle-more-btn" data-slug="${escapeAttr(t.slug)}">${isExpanded ? '▲ 접기' : '▼ 더보기'}</button>`
         : '';
-      return `<div class="twinkle-card${isAnchor ? ' anchor' : ''}" id="${ids.cardPrefix}${t.slug}">
+      return `<div class="twinkle-card${isAnchor ? ' anchor' : ''}" id="${ids.cardPrefix}${escapeAttr(t.slug)}">
         <div class="twinkle-card-header">
-          <span class="twinkle-card-date">${t.date}</span>
+          <span class="twinkle-card-date">${escapeHtml(t.date)}</span>
           <span>${tagsHtml}</span>
         </div>
         <div class="twinkle-card-body">${body}</div>
@@ -145,8 +145,8 @@
       const filtered = filterByTag(state.twinkles);
       const list = document.getElementById(ids.archiveList);
       list.innerHTML = filtered.map(t =>
-        `<div class="archive-item${t.slug === state.anchor ? ' active' : ''}" data-slug="${t.slug}" title="${escapeHtml(t.title)}">
-          <span class="archive-date">${t.date.slice(5)}</span>${escapeHtml(t.title)}
+        `<div class="archive-item${t.slug === state.anchor ? ' active' : ''}" data-slug="${escapeAttr(t.slug)}" title="${escapeHtml(t.title)}">
+          <span class="archive-date">${escapeHtml(t.date).slice(5)}</span>${escapeHtml(t.title)}
         </div>`
       ).join('');
       list.querySelectorAll('.archive-item').forEach(item => {

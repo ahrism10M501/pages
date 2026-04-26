@@ -29,7 +29,7 @@
 }
 
 /* Accent colors */
-.accent-primary { color: #dc00c9; }
+.accent-primary { color: var(--color-accent-strong); }
 .accent-secondary { color: var(--color-info); }
 .accent-critical { color: var(--color-danger); }
 
@@ -103,8 +103,8 @@
 }
 .tag--filter.active {
   color: var(--color-info);
-  border-color: rgba(74, 98, 255, 0.5);
-  background: rgba(74, 98, 255, 0.07);
+  border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+  background: color-mix(in srgb, var(--color-info) 7%, transparent);
 }
 
 /* Project cards horizontal scroll */
@@ -876,7 +876,7 @@ body.graph-modal-open {
 .zoom-preset.active {
   border-color: var(--color-info);
   color: #fff;
-  background: rgba(74, 98, 255, 0.15);
+  background: color-mix(in srgb, var(--color-info) 15%, transparent);
 }
 @media (max-width: 640px) {
   .zoom-preset {
@@ -961,18 +961,18 @@ body.graph-modal-open {
 }
 
 .heatmap-day.level-1 {
-  border-color: rgba(0, 204, 102, 0.35);
-  background: rgba(0, 204, 102, 0.14);
+  border-color: color-mix(in srgb, var(--color-success) 35%, transparent);
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
 }
 
 .heatmap-day.level-2 {
-  border-color: rgba(74, 158, 255, 0.45);
-  background: rgba(74, 158, 255, 0.2);
+  border-color: color-mix(in srgb, var(--color-info) 45%, transparent);
+  background: color-mix(in srgb, var(--color-info) 20%, transparent);
 }
 
 .heatmap-day.level-3 {
-  border-color: rgba(124, 92, 255, 0.55);
-  background: rgba(124, 92, 255, 0.28);
+  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 28%, transparent);
 }
 
 .home-top-tags {
@@ -1298,9 +1298,9 @@ body.graph-modal-open {
   display: inline-flex;
   align-items: center;
   margin: 0;
-  border: 1px solid #222;
+  border: 1px solid var(--color-border);
   background: var(--color-surface);
-  color: #444;
+  color: var(--color-muted-soft);
   padding: 0.1rem 0.4rem;
   font-family: inherit;
   font-size: 0.6rem;
@@ -1310,14 +1310,14 @@ body.graph-modal-open {
 }
 
 .archive-tag-chip:hover {
-  color: #777;
-  border-color: #444;
+  color: var(--color-muted);
+  border-color: var(--color-muted-soft);
 }
 
 .archive-tag-chip.active {
   color: var(--color-info);
-  border-color: rgba(74, 98, 255, 0.5);
-  background: rgba(74, 98, 255, 0.07);
+  border-color: color-mix(in srgb, var(--color-info) 50%, transparent);
+  background: color-mix(in srgb, var(--color-info) 7%, transparent);
 }
 
 .archive-list {
@@ -1364,7 +1364,7 @@ body.graph-modal-open {
 
 .twinkle-nav-btn {
   background: none;
-  border: 1px solid rgba(74, 98, 255, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-info) 30%, transparent);
   color: var(--color-info);
   font-size: 0.65rem;
   padding: 0.2rem 0.6rem;

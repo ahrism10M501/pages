@@ -10,5 +10,11 @@
     "description": "경기대학교 전자공학과의 EoN 동아리의 26년 회장을 맡으며 20명의 인원을 성공적으로 이끌고자 합니다",
     "tags": ["Python", "DL", "대학교", "동아리", "반도체", "설계"],
     "link": "https://github.com/Kyonggi-EoN"
+  }, 
+  {
+    "title": "2026 한이음 공모전",
+    "description": "이전 의성어 증강현실 시스템을 개선하고 실제 프로덕트로 발전시키고자 합니다.",
+    "tags": ["Python", "한이음드림업", "aws"],
+    "link": "https://www.hanium.or.kr/portal/index.do"
   }
 ]

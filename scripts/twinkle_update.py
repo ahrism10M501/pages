@@ -17,9 +17,10 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from posts_list_update import parse_frontmatter_text
-
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+
+from pipeline.scanner import parse_frontmatter_text
 TWINKLE_DIR = ROOT / "twinkle"
 TWINKLES_JSON = TWINKLE_DIR / "twinkles.json"
 POSTS_JSON = ROOT / "blog" / "posts.json"

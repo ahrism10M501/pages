@@ -51,10 +51,22 @@ posts/<slug>/
   index.html            # 빌드 산출물
   images/
 
+pipeline/              # 빌드 파이프라인 패키지
+  __init__.py
+  config.py             # 모든 경로/상수 단일 소스
+  models.py             # 타입 정의
+  io.py                 # 파일 I/O 집중
+  state.py              # 변경 감지 (SHA256 기반)
+  scanner.py            # posts/ 스캔 + MD/ipynb 파싱
+  embedder.py           # 임베딩 모델 (lazy singleton)
+  graph_builder.py      # TF-IDF + 유사도 → graph.json
+  tagger.py             # 3단계 태그 할당
+  supernode_builder.py  # 슈퍼노드 (AgglomerativeClustering)
+  orchestrator.py       # 전체 파이프라인 오케스트레이터
+
 scripts/
-  build_site.py         # NEW: Jinja2 템플릿 → HTML 렌더러
-  post_update.py        # 오케스트레이터 (posts.json + graph + 태그 + build_site)
-  posts_list_update.py, build_graph.py, auto_tag.py, twinkle_update.py, ...
+  build_site.py         # Jinja2 템플릿 → HTML 렌더러
+  twinkle_update.py     # 트윙클 JSON 생성
 
 docs/                   # 설계 문서
 ```
@@ -80,7 +92,7 @@ summary: "한 줄 요약 (없으면 본문에서 자동 추출)"
 
 3. 빌드 (포스트 메타 + 그래프 + 정적 HTML 모두 갱신):
 ```bash
-cd scripts && uv run python post_update.py
+uv run python main.py
 ```
 
 | 옵션 | 설명 |
@@ -91,27 +103,14 @@ cd scripts && uv run python post_update.py
 
 HTML만 다시 렌더링하려면:
 ```bash
-cd scripts && uv run python build_site.py
-```
-
-### 개별 스크립트 CLI
-
-```bash
-# 태그 관리
-uv run python auto_tag.py init              # tags.json + 태그 임베딩 초기화
-uv run python auto_tag.py suggest <slug>    # 특정 포스트 태그 추천
-uv run python auto_tag.py suggest --all     # 전체 포스트 태그 추천
-
-# 그래프 생성
-uv run python build_graph.py                # 증분 업데이트
-uv run python build_graph.py --force        # 전체 재빌드
+uv run python scripts/build_site.py
 ```
 
 ## 자동 태그 시스템
 
-3단계 태그 할당 (우선순위 순):
+3단계 태그 할당 (우선순위 순, pipeline/tagger.py):
 
-1. **Vocabulary matching** — `tag_vocabulary.json`의 시드 태그를 본문에서 직접 매칭
+1. **Vocabulary matching** — `pipeline/tag_vocabulary.json`의 시드 태그를 본문에서 직접 매칭
 2. **Embedding 추천** — 포스트 임베딩과 기존 태그 임베딩의 코사인 유사도 비교
 3. **TF-IDF 생성** — 매칭 부족 시 키워드 기반 새 태그 생성
 
@@ -124,9 +123,9 @@ uv run python build_graph.py --force        # 전체 재빌드
 
 ## 그래프 시스템
 
-**build_graph.py** — 포스트 간 유사도 계산:
-- 모델: `jhgan/ko-sroberta-multitask`
-- `SIMILARITY_THRESHOLD = 0.3` / `MAX_EDGES_PER_NODE = 8` / `TFIDF_TOP_N = 20`
+**pipeline/graph_builder.py** — 포스트 간 유사도 계산:
+- 모델: `jhgan/ko-sroberta-multitask` (pipeline/embedder.py에서 로드)
+- `SIMILARITY_THRESHOLD = 0.3` / `MAX_EDGES_PER_NODE = 8` / `TFIDF_TOP_N = 20` (pipeline/config.py)
 - SHA256 해시 기반 증분 캐싱 (`.post_cache.json`)
 
 **graph.js** — 프론트엔드 렌더링:

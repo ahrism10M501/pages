@@ -206,3 +206,21 @@ def test_home_graph_fullscreen_traps_tab_focus():
         "e.preventDefault()",
     ]:
         assert expected in js
+
+
+def test_home_template_includes_stats_mount_and_script():
+    html = read("templates/pages/home.html")
+    assert 'id="home-stats"' in html
+    assert 'src="{{ root }}src/home-stats.js"' in html
+    assert 'data-posts="{{ root }}blog/posts.json"' in html
+    assert 'data-graph="{{ root }}blog/graph.json"' in html
+    assert 'data-twinkles="{{ root }}twinkle/twinkles.json"' in html
+
+
+def test_home_stats_module_computes_static_blog_stats():
+    js = read("src/home-stats.js")
+    assert "renderHomeStats" in js
+    assert "buildHeatmapDays" in js
+    assert "last90Days" in js
+    assert "topTags" in js
+    assert "twinkleCount" in js

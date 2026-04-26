@@ -828,6 +828,8 @@ body {
   display: flex;
   gap: 0;
   min-height: 60vh;
+  flex-direction: column;
+  margin-right: 200px;
 }
 
 .twinkle-feed {
@@ -837,15 +839,16 @@ body {
 }
 
 .twinkle-archive {
+  position: fixed;
+  right: 0;
+  top: 0;
   width: 200px;
-  flex-shrink: 0;
+  height: 100vh;
   border-left: 1px solid #1e1e1e;
   background: #080808;
   display: flex;
-  position: sticky;
-  top: 0;
-  height: 100vh;
   overflow-y: auto;
+  z-index: 50;
 }
 
 .twinkle-archive-resize {
@@ -1081,6 +1084,7 @@ body {
 
 @media (max-width: 767px) {
   .twinkle-archive { display: none; }
+  .twinkle-layout { margin-right: 0; }
   .twinkle-feed { padding: 1rem 0; }
   .twinkle-mobile-tags { display: flex; }
 }

@@ -168,7 +168,10 @@
         startX = e.clientX;
         startW = archive.offsetWidth;
         function onMove(ev) {
-          archive.style.width = Math.max(120, Math.min(400, startW + (startX - ev.clientX))) + 'px';
+          const newWidth = Math.max(120, Math.min(400, startW + (startX - ev.clientX)));
+          archive.style.width = newWidth + 'px';
+          const layout = document.querySelector('.twinkle-layout');
+          if (layout) layout.style.marginRight = newWidth + 'px';
         }
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', () => document.removeEventListener('mousemove', onMove), { once: true });

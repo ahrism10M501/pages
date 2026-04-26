@@ -842,7 +842,10 @@ body {
   border-left: 1px solid #1e1e1e;
   background: #080808;
   display: flex;
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .twinkle-archive-resize {
@@ -1103,7 +1106,6 @@ body {
   flex: 1;
   padding: 2.5rem 2.5rem;
   min-width: 0;
-  max-width: 700px;
 }
 .about-profile-placeholder {
   width: 72px;

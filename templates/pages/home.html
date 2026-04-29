@@ -53,7 +53,6 @@
   <section id="home-stats" class="home-stats" aria-label="블로그 활동 통계">
     <div class="home-stats-header">
       <span class="label--slash">Stats</span>
-      <h2>Blog Activity</h2>
     </div>
     <div class="home-stats-grid" id="home-stats-grid"></div>
     <div class="home-heatmap" id="home-heatmap" aria-label="포스팅 활동 히트맵"></div>
@@ -78,5 +77,5 @@ fetch('{{ root }}projects.json')
   .catch(() => {});
 </script>
 <script src="{{ root }}src/home-stats.js" data-posts="{{ root }}blog/posts.json" data-graph="{{ root }}blog/graph.json" data-twinkles="{{ root }}twinkle/twinkles.json"></script>
-<script src="{{ root }}src/home-graph.js" data-graph="{{ root }}blog/graph.json" data-posts="{{ root }}blog/posts.json" data-twinkles="{{ root }}twinkle/twinkles.json" data-posts-base="{{ root }}posts/"></script>
+<script src="{{ root }}src/home-graph.js" data-graph="{{ root }}blog/graph.json" data-posts="{{ root }}blog/posts.json" data-twinkles="{{ root }}twinkle/twinkles.json" data-posts-base="{{ root }}posts/" data-twinkle-base="{{ root }}twinkle/"></script>
 {% endblock %}

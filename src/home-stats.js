@@ -111,6 +111,7 @@
     const last90Days = countRecentPosts(posts, 90, today);
     const notebookCount = posts.filter((post) => Boolean(post.notebook)).length;
     const graphLinks = (graph.edges || graph.links || []).length;
+    const supernodeCount = (graph.supernodes || []).length;
     const twinkleCount = twinkles.length;
     const topTags = getTopTags(posts, 6);
 
@@ -118,8 +119,9 @@
       renderStatCard('Posts', posts.length, 'published notes'),
       renderStatCard('Last 90 days', last90Days, 'recent posts'),
       renderStatCard('Notebooks', notebookCount, 'executable posts'),
+      renderStatCard('Twinkles', twinkleCount, 'short notes'),
       renderStatCard('Graph links', graphLinks, 'knowledge edges'),
-      renderStatCard('Twinkles', twinkleCount, 'short notes')
+      renderStatCard('Supernodes', supernodeCount, 'thematic clusters')
     );
 
     const heatmapDays = buildHeatmapDays(posts, 84, today);

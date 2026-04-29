@@ -237,7 +237,7 @@ function initGraph(container, graphData, options = {}) {
   cy.on('tap', 'node', function (evt) {
     const node = evt.target;
     if (node.hasClass('twinkle-star')) {
-      window.location.href = '/twinkle/#' + node.data('slug');
+      if (options.onTwinkleClick) options.onTwinkleClick(node.data('slug'));
       return;
     }
     if (node.hasClass('supernode')) {
@@ -485,7 +485,7 @@ function setupEdgeTooltip(cy) {
       'font-size:11px',
       'padding:4px 8px',
       'pointer-events:none',
-      'z-index:9999',
+      'z-index:10010',
       'white-space:nowrap',
     ].join(';');
     document.body.appendChild(tip);
@@ -493,6 +493,8 @@ function setupEdgeTooltip(cy) {
 
   cy.on('mouseover', 'node.twinkle-star', function (evt) {
     tip.textContent = '✦ ' + evt.target.data('title');
+    tip.style.left = (evt.originalEvent.clientX + 12) + 'px';
+    tip.style.top = (evt.originalEvent.clientY - 8) + 'px';
     tip.style.display = 'block';
   });
 
@@ -512,6 +514,8 @@ function setupEdgeTooltip(cy) {
     if (tgtTags.length === 0) return;
 
     tip.textContent = tgtTags.map(t => '#' + t).join('  ');
+    tip.style.left = (evt.originalEvent.clientX + 12) + 'px';
+    tip.style.top = (evt.originalEvent.clientY - 8) + 'px';
     tip.style.display = 'block';
   });
 

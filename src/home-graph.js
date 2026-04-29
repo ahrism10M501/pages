@@ -1,6 +1,6 @@
 // home-graph.js — home page graph: init, random node pulse, fullscreen mode.
 // Reads data URLs from current script's dataset:
-//   data-graph, data-posts, data-twinkles, data-posts-base
+//   data-graph, data-posts, data-twinkles, data-posts-base, data-twinkle-base
 //
 // Required globals: cytoscape, fetchGraph, fetchPosts, renderPostList, initGraph
 
@@ -10,6 +10,7 @@
   const POSTS_URL = ds.posts;
   const TWINKLES_URL = ds.twinkles;
   const POSTS_BASE = ds.postsBase || '../posts/';
+  const TWINKLE_BASE = ds.twinkleBase || '../twinkle/';
 
   startGraph();
 
@@ -31,6 +32,7 @@
 
     const cy = initGraph(document.getElementById('graph-container'), graphData, {
       onNodeClick: slug => { window.location.href = POSTS_BASE + slug + '/'; },
+      onTwinkleClick: slug => { window.location.href = TWINKLE_BASE + '#' + slug; },
       userZoomingEnabled: false,
       twinkles,
     });

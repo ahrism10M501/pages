@@ -4,6 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Ahrism{% endblock %}</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="{{ root }}assets/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ root }}assets/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ root }}assets/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="{{ root }}assets/apple-touch-icon.png">
+  <link rel="manifest" href="{{ root }}assets/manifest.json">
+  <meta name="theme-color" content="#0a0a0a">
+
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="Ahrism">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:title" content="{% block og_title %}Ahrism{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}Building Practical AI Systems · Physical Agents{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}https://ahrism.com{% endblock %}">
+  <meta property="og:image" content="https://ahrism.com/assets/android-chrome-512x512.png">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="{% block twitter_title %}Ahrism{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}Building Practical AI Systems · Physical Agents{% endblock %}">
+  <meta name="twitter:image" content="https://ahrism.com/assets/android-chrome-512x512.png">
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <link rel="stylesheet" href="{{ root }}style.css">
   {% block head_extra %}{% endblock %}

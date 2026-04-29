@@ -179,6 +179,16 @@ function createNbLoader(container) {
     document.getElementById('post-meta').innerHTML =
       `<span class="label--slash">${post.date}</span>` +
       post.tags.map(t => `<span class="tag">${t}</span>`).join(' ');
+
+    const desc = post.summary || post.title;
+    const url = `https://ahrism.com/posts/${slug}/`;
+    const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); };
+    setMeta('meta[property="og:title"]', `${post.title} — ahrism`);
+    setMeta('meta[property="og:description"]', desc);
+    setMeta('meta[property="og:url"]', url);
+    setMeta('meta[property="og:type"]', 'article');
+    setMeta('meta[name="twitter:title"]', `${post.title} — ahrism`);
+    setMeta('meta[name="twitter:description"]', desc);
   }
 
   if (post && post.notebook) {

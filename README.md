@@ -32,7 +32,7 @@ summary: "글을 소개하는 한 문장"
 
 이미지는 같은 폴더의 `images/`에 넣고 `![설명](./images/example.png)`처럼 참조합니다. 기존 `content.ipynb`도 지원하며, 첫 Markdown 셀에 같은 메타데이터를 넣습니다. `title`이 없는 글과 노트북은 목록에 노출되지 않습니다.
 
-짧은 글은 `twinkle/<slug>.md`에 같은 메타데이터와 본문을 작성합니다. 작성 후 `uv run python main.py`로 다시 빌드합니다.
+짧은 글인 Twinkle은 `twinkle/<slug>.md`에 같은 메타데이터와 본문을 작성합니다. 작성 후 `uv run python main.py`로 다시 빌드합니다.
 
 ## 확인
 

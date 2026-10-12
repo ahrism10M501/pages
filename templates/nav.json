@@ -1,5 +1,5 @@
 [
   {"id": "blog", "label": "글", "href": "blog/"},
-  {"id": "twinkle", "label": "메모", "href": "twinkle/"},
+  {"id": "twinkle", "label": "Twinkle", "href": "twinkle/"},
   {"id": "about", "label": "소개", "href": "about/"}
 ]

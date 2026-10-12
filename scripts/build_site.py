@@ -2,6 +2,7 @@
 """Build metadata and HTML from the existing Markdown and notebook sources."""
 
 import sys
+from itertools import combinations
 from pathlib import Path
 from urllib.parse import quote
 
@@ -19,8 +20,43 @@ PAGES = [
     ("pages/about.html", "about/index.html", "about"),
     ("pages/blog.html", "blog/index.html", "blog"),
     ("pages/twinkle.html", "twinkle/index.html", "twinkle"),
+    ("pages/graph.html", "graph/index.html", "graph"),
     ("pages/github.html", "github/index.html", "github"),
 ]
+
+
+def build_graph(posts, twinkles):
+    nodes = []
+    related = {}
+    for kind, records in (("post", posts), ("twinkle", twinkles)):
+        for record in records:
+            node_id = f"{kind}:{record['slug']}"
+            references = record.get("related", [])
+            if not isinstance(references, list) or any(not isinstance(ref, str) for ref in references):
+                raise ValueError(f"{node_id}: related must be a list of post:<slug> or twinkle:<slug>")
+            related[node_id] = references
+            slug = quote(record["slug"], safe="")
+            nodes.append({
+                "id": node_id,
+                "kind": kind,
+                "title": record["title"],
+                "date": record["date"],
+                "tags": record["tags"],
+                "summary": record.get("summary") or scanner.extract_summary(record.get("content", "")),
+                "url": f"posts/{slug}/" if kind == "post" else f"twinkle/#{slug}",
+            })
+    ids = {node["id"] for node in nodes}
+    for node_id, references in related.items():
+        for reference in references:
+            if reference not in ids or reference == node_id:
+                raise ValueError(f"{node_id}: invalid related reference {reference!r}")
+    edges = []
+    for source, target in combinations(nodes, 2):
+        tags = sorted(set(source["tags"]) & set(target["tags"]))
+        manual = target["id"] in related[source["id"]] or source["id"] in related[target["id"]]
+        if tags or manual:
+            edges.append({"source": source["id"], "target": target["id"], "tags": tags, "manual": manual})
+    return {"nodes": nodes, "edges": edges}
 
 
 def make_env():
@@ -54,8 +90,9 @@ def render_page(env, context, template_name, out_rel, current_page, post=None):
 
 def main():
     posts = sorted(scanner.scan_posts(ROOT / "posts"), key=lambda post: post["date"], reverse=True)
-    io.save_posts_json(posts, ROOT / "blog" / "posts.json")
     twinkles = twinkle_update.scan_twinkles(ROOT / "twinkle")
+    graph = build_graph(posts, twinkles)
+    io.save_posts_json(posts, ROOT / "blog" / "posts.json")
     twinkle_update.update_twinkles_json(twinkles, ROOT / "twinkle" / "twinkles.json")
     context = {
         "nav": io.load_json(ROOT / "templates" / "nav.json"),
@@ -63,6 +100,7 @@ def main():
         "twinkles": twinkles,
         "projects": io.load_json(ROOT / "projects.json", default=[]),
         "site_url": SITE_URL,
+        "graph": graph,
     }
     env = make_env()
     for template_name, out_rel, current_page in PAGES:

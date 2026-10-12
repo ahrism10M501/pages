@@ -30,6 +30,8 @@ def scan_twinkles(twinkle_dir: Path | None = None) -> list[dict]:
             "tags": [str(tag) for tag in fm.get("tags", [])],
             "content": body.strip(),
         })
+        if "related" in fm:
+            twinkles[-1]["related"] = fm["related"]
     return sorted(twinkles, key=lambda twinkle: twinkle["date"], reverse=True)
 
 

@@ -8,6 +8,7 @@ class FrontMatter(TypedDict, total=False):
     date: str
     tags: list[str]
     summary: str
+    related: list[str]
 
 
 class PostRecord(TypedDict, total=False):
@@ -17,3 +18,4 @@ class PostRecord(TypedDict, total=False):
     tags: list[str]
     summary: str
     notebook: bool
+    related: list[str]

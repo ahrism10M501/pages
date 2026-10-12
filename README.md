@@ -34,6 +34,20 @@ summary: "글을 소개하는 한 문장"
 
 짧은 글인 Twinkle은 `twinkle/<slug>.md`에 같은 메타데이터와 본문을 작성합니다. 작성 후 `uv run python main.py`로 다시 빌드합니다.
 
+## Graph
+
+Graph 화면에서 글과 Twinkle의 연결을 탐색합니다. 같은 태그가 있으면 선으로 연결되며, 선택한 기록의 요약과 연결 이유를 확인하고 원문으로 이동할 수 있습니다. 모바일에서는 목록이 먼저 열립니다.
+
+직접 연결하려면 글 또는 Twinkle의 YAML 메타데이터에 아래처럼 `related`를 추가합니다. `post:`는 글 폴더명, `twinkle:`은 메모 파일명에서 `.md`를 뺀 이름을 가리킵니다.
+
+```yaml
+related:
+  - "post:nn1"
+  - "twinkle:2026-04-27-agentDrivenDev"
+```
+
+직접 연결은 양쪽에서 탐색할 수 있습니다. 없는 기록이나 초안을 지정하면 빌드가 오류를 알려 줍니다. 새 연결도 `uv run python main.py`로 반영합니다.
+
 ## 확인
 
 ```sh

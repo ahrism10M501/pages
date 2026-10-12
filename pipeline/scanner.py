@@ -128,6 +128,8 @@ def scan_posts(posts_dir: Path | None = None) -> list[PostRecord]:
         }
         if is_notebook:
             post["notebook"] = True
+        if "related" in fm:
+            post["related"] = fm["related"]
         posts.append(post)
 
     return posts

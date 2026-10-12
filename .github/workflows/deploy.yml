@@ -28,7 +28,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p _site
-          cp -r index.html style.css src assets about blog twinkle github posts \
+          cp -r index.html style.css src assets about blog twinkle graph github posts \
             projects.json .nojekyll _site/
       - uses: actions/upload-pages-artifact@v5
         with:

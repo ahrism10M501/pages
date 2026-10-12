@@ -57,7 +57,7 @@ test('archive and navigation work without JavaScript', async ({ browser }) => {
 for (const width of [375, 1280]) {
   test('readable layout at ' + width + 'px', async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    for (const path of ['./', './about/', './blog/', './twinkle/', './posts/nn1/', './posts/matplotlib1/']) {
+    for (const path of ['./', './about/', './blog/', './twinkle/', './graph/', './posts/nn1/', './posts/matplotlib1/']) {
       await page.goto(path);
       if (path.includes('posts/')) await expect(page.locator('#post-content')).toHaveAttribute('aria-busy', 'false');
       await expect(page.locator('main')).toBeVisible();

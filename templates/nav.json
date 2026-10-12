@@ -1,5 +1,6 @@
 [
   {"id": "blog", "label": "글", "href": "blog/"},
   {"id": "twinkle", "label": "Twinkle", "href": "twinkle/"},
+  {"id": "graph", "label": "Graph", "href": "graph/"},
   {"id": "about", "label": "소개", "href": "about/"}
 ]

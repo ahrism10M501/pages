@@ -1,7 +1,7 @@
 """
 Scans posts/ directory and parses frontmatter from .md and .ipynb files.
 Owns: directory traversal, YAML parsing, notebook cell extraction, summary extraction.
-Does NOT write any files. Does NOT call ML models.
+Does not write files.
 """
 from __future__ import annotations
 
@@ -92,8 +92,7 @@ def scan_posts(posts_dir: Path | None = None) -> list[PostRecord]:
     Skips directories starting with '_'.
     Skips posts missing a 'title' in frontmatter (logs to stderr).
 
-    Returns PostRecord list with internal '_body' and '_path' keys set.
-    These internal keys are stripped before any file is written.
+    Returns public metadata for each post.
     """
     base = posts_dir or config.POSTS_DIR
 
@@ -126,11 +125,11 @@ def scan_posts(posts_dir: Path | None = None) -> list[PostRecord]:
             "date": str(fm.get("date", date.today())),
             "tags": [str(t) for t in fm.get("tags", [])],
             "summary": str(fm.get("summary") or extract_summary(body)),
-            "_body": body,
-            "_path": str(paths.get("ipynb") or paths.get("md")),
         }
         if is_notebook:
             post["notebook"] = True
+        if "related" in fm:
+            post["related"] = fm["related"]
         posts.append(post)
 
     return posts

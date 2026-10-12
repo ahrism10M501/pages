@@ -19,51 +19,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-
-      - name: Build site (Jinja2 templates → HTML)
-        # ML steps (posts.json / graph.json / tags.json) are regenerated locally
-        # by the author and committed; CI only renders templates.
-        run: uv run python scripts/build_site.py
-
-      - name: Install JupyterLite
-        run: pip install jupyterlite-core jupyterlite-pyodide-kernel jupyter-server
-
-      - name: Collect notebooks for JupyterLite
-        run: |
-          mkdir -p _jl_contents
-          for ipynb in posts/*/content.ipynb; do
-            [ -f "$ipynb" ] || continue
-            slug=$(basename $(dirname "$ipynb"))
-            mkdir -p "_jl_contents/posts/$slug"
-            cp "$ipynb" "_jl_contents/posts/$slug/content.ipynb"
-          done
-
-      - name: Build JupyterLite
-        run: jupyter lite build --contents _jl_contents --output-dir lab --base-url /pages/lab/
-
+      - uses: astral-sh/setup-uv@v6
+      - name: Build metadata and static pages
+        run: uv run --frozen --no-dev python scripts/build_site.py
       - name: Prepare site
         run: |
           mkdir -p _site
-          # Built HTML + static assets. JS modules live under src/.
-          for item in index.html style.css src about blog twinkle github posts \
-                      projects.json github-sources.json .nojekyll; do
-            [ -e "$item" ] && cp -r "$item" _site/ || true
-          done
-          # JupyterLite 출력
-          cp -r lab _site/
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v5
+          cp -r index.html style.css src assets about blog twinkle graph github posts \
+            projects.json .nojekyll _site/
+      - uses: actions/upload-pages-artifact@v5
         with:
-          path: '_site'
-
+          path: _site
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -71,5 +40,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/deploy-pages@v5
+      - name: Deploy
         id: deployment
+        uses: actions/deploy-pages@v5

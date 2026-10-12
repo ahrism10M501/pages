@@ -24,6 +24,7 @@ index.html
 about/index.html
 blog/index.html
 twinkle/index.html
+graph/index.html
 github/index.html
 posts/*/index.html
 
@@ -31,3 +32,8 @@ posts/*/index.html
 lab/
 _jl_contents/
 _site/
+
+# Browser tests
+node_modules/
+playwright-report/
+test-results/

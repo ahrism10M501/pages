@@ -1,46 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Loading... — ahrism{% endblock %}
+{% block title %}{{ post.title }} — Ahrism{% endblock %}
+{% block description %}{{ post.summary }}{% endblock %}
 {% block og_type %}article{% endblock %}
-{% block og_title %}ahrism{% endblock %}
-{% block og_description %}Building Practical AI Systems · Physical Agents{% endblock %}
-{% block twitter_title %}ahrism{% endblock %}
-{% block twitter_description %}Building Practical AI Systems · Physical Agents{% endblock %}
 {% block head_extra %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/styles/github-dark.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css">
 {% endblock %}
-
 {% block content %}
-<main class="container">
-  <a href="{{ root }}blog/" style="font-size:0.85rem;color:#444">← Blog</a>
-  <div id="post-header" class="editorial-header">
-    <div class="post-meta" id="post-meta"></div>
-    <h1 id="post-title"></h1>
-  </div>
-  <article id="post-content" class="post-content"></article>
-  <section id="related-graph-section" style="display:none">
-    <div class="label">Related Posts</div>
-    <div class="depth-control">
-      <label for="depth-slider">깊이:</label>
-      <input type="range" id="depth-slider" min="2" max="5" value="2">
-      <span class="depth-value" id="depth-value">2</span>
-    </div>
-    <div class="graph-container subgraph" id="subgraph-container"></div>
-  </section>
+<main id="main" class="container article-container">
+  <a class="text-link back-link" href="{{ root }}blog/">← 모든 글</a>
+  <header class="article-heading">
+    <time datetime="{{ post.date }}">{{ post.date }}</time>
+    <h1>{{ post.title }}</h1>
+    <p class="post-tags">{{ post.tags | join(' · ') }}</p>
+    {% if post.notebook %}<a class="text-link notebook-download" href="./content.ipynb" download>노트북 원본 다운로드 ↓</a>{% endif %}
+  </header>
+  <article id="post-content" class="post-content" data-source="./{{ 'content.ipynb' if post.notebook else 'content.md' }}" data-notebook="{{ 'true' if post.notebook else 'false' }}" aria-busy="true">
+    <p role="status">글을 불러오는 중입니다.</p>
+  </article>
+  <noscript><p>글 본문을 읽으려면 JavaScript를 켜거나 <a href="./{{ 'content.ipynb' if post.notebook else 'content.md' }}">원본 파일</a>을 열어 주세요.</p></noscript>
 </main>
 {% endblock %}
-
-{% block scripts %}
-<script src="{{ root }}src/utils.js"></script>
-<script src="{{ root }}src/posts.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js"></script>
-<script src="{{ root }}src/graph.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release/build/highlight.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-<script src="{{ root }}src/post.js"></script>
-{% endblock %}
+{% block scripts %}{% include "partials/content-scripts.html" %}{% endblock %}

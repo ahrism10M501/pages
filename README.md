@@ -1,121 +1,64 @@
+# Ahrism Blog
 
+기술 글과 짧은 생각을 기록하는 정적 블로그입니다. Markdown과 Jupyter 노트북을 HTML로 빌드해 GitHub Pages에서 제공합니다.
 
-<div align="center">
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:ff0000,50:dc00c9,100:0082ff&height=200&section=header&text=ahrism&fontSize=48&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=Building%20Practical%20AI%20Systems%20%C2%B7%20Physical%20Agents&descSize=16&descAlignY=58&descAlign=50" width="100%" />
-</div>
+## 로컬 실행
 
-## 👋 소개
+Python 3.10 이상과 [uv](https://docs.astral.sh/uv/)가 필요합니다.
 
-**인공지능(AI)** 과 **데이터 분석**, 그리고 **Physical AI**를 연구하고 있습니다.
+```sh
+uv run python main.py
+python3 -m http.server 8000
+```
 
-데이터를 통해 현상을 분석하고, 이를 바탕으로 실제 세계의 문제를 해결하는 AI 에이전트(AI Agent)와 엣지 AI(Edge AI) 기술에 깊은 관심을 가지고 있습니다. 단순히 완성된 모델이나 라이브러리를 사용하는 것을 넘어, 알고리즘을 밑바닥부터(From Scratch) 직접 구현하며 원리를 깊이 있게 이해하는 과정을 중요하게 생각합니다.
+이 저장소에서 서버를 실행하면 `http://localhost:8000/`에서 확인합니다. 상위 폴더에서 실행하면 `http://localhost:8000/pages/`로 접속합니다.
 
-소프트웨어의 지능이 현실 세계와 맞닿아 상호작용하는 지점을 만들어가고 있습니다.
+## 글 작성
 
+`posts/<slug>/content.md`를 만들고 첫 줄부터 다음 메타데이터를 작성합니다. 폴더명이 글 주소가 되므로 공개된 글의 폴더명은 유지합니다.
+
+```markdown
+---
+title: "글 제목"
+date: 2026-10-12
+tags: [Python, AI]
+summary: "글을 소개하는 한 문장"
 ---
 
-## 🔬 관심 분야
+# 글 제목
 
-<table>
-<tr>
-<td width="50%" valign="top">
+본문을 작성합니다.
+```
 
-### Practical Deep Learning
-- PyTorch / TensorFlow 기반 모델 설계
-- 신경망 알고리즘 From-scratch 구현
-- 컴퓨터 비전(CV) 및 시계열 데이터 분석
-- AI 모델 학습 최적화 및 평가
+이미지는 같은 폴더의 `images/`에 넣고 `![설명](./images/example.png)`처럼 참조합니다. 기존 `content.ipynb`도 지원하며, 첫 Markdown 셀에 같은 메타데이터를 넣습니다. `title`이 없는 글과 노트북은 목록에 노출되지 않습니다.
 
-</td>
-<td width="50%" valign="top">
+짧은 글인 Twinkle은 `twinkle/<slug>.md`에 같은 메타데이터와 본문을 작성합니다. 작성 후 `uv run python main.py`로 다시 빌드합니다.
 
-### ⚙️ Physical AI & Edge AI
-- AI Agent 기반 문제 해결 파이프라인
-- Smart Factory 및 센서 데이터 처리
-- 제한된 환경에서의 Edge AI 추론
-- 하드웨어와 소프트웨어의 통합(C++/Arduino)
+## Graph
 
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
+Graph 화면에서 글과 Twinkle의 연결을 탐색합니다. 같은 태그가 있으면 선으로 연결되며, 선택한 기록의 요약과 연결 이유를 확인하고 원문으로 이동할 수 있습니다. 모바일에서는 목록이 먼저 열립니다.
 
-### 📊 Data Analytics
-- Python / C++ 기반 대용량 데이터 처리
-- 통계적 데이터 분석 및 시각화 (EDA)
-- 공공 데이터 및 소셜 데이터 분석 파이프라인
-- 데이터 기반 의사결정 모델링
+직접 연결하려면 글 또는 Twinkle의 YAML 메타데이터에 아래처럼 `related`를 추가합니다. `post:`는 글 폴더명, `twinkle:`은 메모 파일명에서 `.md`를 뺀 이름을 가리킵니다.
 
-</td>
-<td width="50%" valign="top">
+```yaml
+related:
+  - "post:nn1"
+  - "twinkle:2026-04-27-agentDrivenDev"
+```
 
-### 💻 Algorithm & Software Design
-- C++ (Modern C++) 기반 성능 최적화
-- 객체지향 프로그래밍 및 디자인 패턴 적용
-- 하드웨어 제어 및 저수준 프로그래밍
-- 효율적인 데이터 구조 및 알고리즘 설계
+직접 연결은 양쪽에서 탐색할 수 있습니다. 없는 기록이나 초안을 지정하면 빌드가 오류를 알려 줍니다. 새 연결도 `uv run python main.py`로 반영합니다.
 
-</td>
-</tr>
-</table>
+## 확인
 
----
+```sh
+uv run pytest
+npm ci
+npx playwright install chromium
+npm test
+```
 
-## 🛠️ Tech Stack
+Chromium 설치는 브라우저 테스트를 처음 실행할 때 필요합니다.
 
-<div align="center">
+## 배포
 
-#### Languages
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
-![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
-
-#### AI & Data Analysis
-![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white)
-![OpenCV](https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
-![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
-![SciPy](https://img.shields.io/badge/SciPy-8CAAE6?style=for-the-badge&logo=scipy&logoColor=white)
-
-#### Infra & Tools
-![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
-
-</div>
-
----
-
-## 📊 GitHub Stats
-
-<div align="center">
-
-<img src="https://github-readme-stats.vercel.app/api?username=ahrism10m501&show_icons=true&hide_border=true&bg_color=0d1117&title_color=dc00c9&icon_color=0082ff&text_color=ffffff&ring_color=ff0000" height="170" />
-<img src="https://github-readme-stats.vercel.app/api/top-langs/?username=ahrism10m501&layout=compact&hide_border=true&bg_color=0d1117&title_color=dc00c9&text_color=ffffff" height="170" />
-
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=ahrism10m501&hide_border=true&background=0d1117&ring=ff0000&fire=dc00c9&currStreakLabel=0082ff&sideLabels=ffffff&dates=aaaaaa&currStreakNum=ffffff&sideNums=ffffff" width="600" />
-
-</div>
-
----
-
-## 📬 Contact
-
-<div align="center">
-
-[![Gmail](https://img.shields.io/badge/Gmail-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:ariofeem@gmail.com)
-[![Velog](https://img.shields.io/badge/Velog-20C997?style=for-the-badge&logo=velog&logoColor=white)](https://velog.io/@ahrism7/posts)
-[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://instagram.com/l.all.means)
-
-</div>
-
----
-
-<div align="center">
-
-*"Transforming data into intelligence, and intelligence into real-world action."*
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0082ff,50:dc00c9,100:ff0000&height=100&section=footer" width="100%" />
-
-</div>
+GitHub 저장소의 **Settings → Pages → Source**를 **GitHub Actions**로 설정합니다. `main` 브랜치에 푸시하면 [배포 워크플로](.github/workflows/deploy.yml)가 사이트를 빌드하고 GitHub Pages에 배포합니다.

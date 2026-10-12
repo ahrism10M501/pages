@@ -1,7 +1,6 @@
 [
-  {"id": "home",    "label": "Home",    "icon": "⌂", "href": ""},
-  {"id": "about",   "label": "About",   "icon": "◉", "href": "about/"},
-  {"id": "blog",    "label": "Blog",    "icon": "≡", "href": "blog/"},
-  {"id": "twinkle", "label": "Twinkle", "icon": "✦", "href": "twinkle/"},
-  {"id": "github",  "label": "GitHub",  "icon": "⬡", "href": "github/"}
+  {"id": "blog", "label": "글", "href": "blog/"},
+  {"id": "twinkle", "label": "Twinkle", "href": "twinkle/"},
+  {"id": "graph", "label": "Graph", "href": "graph/"},
+  {"id": "about", "label": "소개", "href": "about/"}
 ]

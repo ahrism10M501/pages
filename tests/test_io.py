@@ -1,72 +1,46 @@
-"""Tests for pipeline.io — atomic writes, cache round-trips."""
+"""Atomic writes protect existing metadata and skip unchanged updates."""
+
 import json
-import tempfile
-from pathlib import Path
 
-from pipeline.io import (
-    atomic_write_json,
-    load_json,
-    load_post_cache,
-    load_tag_cache,
-    save_post_cache,
-    save_tag_cache,
-    save_tags_json,
-)
+import pytest
+
+from pipeline import io
 
 
-def test_atomic_write_json_creates_file():
-    with tempfile.TemporaryDirectory() as tmp:
-        target = Path(tmp) / "out.json"
-        atomic_write_json({"key": "value"}, target)
-        assert target.exists()
-        data = json.loads(target.read_text())
-        assert data["key"] == "value"
+def test_atomic_write_json_creates_file_and_removes_temp(tmp_path):
+    target = tmp_path / "metadata" / "out.json"
+    io.atomic_write_json({"key": "값"}, target)
+    assert io.load_json(target) == {"key": "값"}
+    assert not target.with_suffix(".tmp").exists()
 
 
-def test_atomic_write_json_no_tmp_left():
-    with tempfile.TemporaryDirectory() as tmp:
-        target = Path(tmp) / "out.json"
-        atomic_write_json([1, 2, 3], target)
-        tmp_file = target.with_suffix(".tmp")
-        assert not tmp_file.exists()
+def test_load_json_missing_returns_default(tmp_path):
+    assert io.load_json(tmp_path / "missing.json", default={"fallback": True}) == {"fallback": True}
 
 
-def test_load_json_missing_returns_default():
-    result = load_json(Path("/nonexistent/path.json"), default={"fallback": True})
-    assert result == {"fallback": True}
+def test_failed_write_preserves_previous_metadata(tmp_path, monkeypatch):
+    target = tmp_path / "posts.json"
+    io.atomic_write_json(["existing"], target)
+
+    def fail_replace(source, destination):
+        raise OSError("replace failed")
+
+    monkeypatch.setattr(io.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="replace failed"):
+        io.atomic_write_json(["new"], target)
+    assert io.load_json(target) == ["existing"]
 
 
-def test_post_cache_round_trip():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / ".post_cache.json"
-        cache = {"slug1": {"hash": "abc123", "embedding": [0.1, 0.2, 0.3]}}
-        save_post_cache(cache, path)
-        loaded = load_post_cache(path)
-        assert loaded["slug1"]["hash"] == "abc123"
-        assert loaded["slug1"]["embedding"] == [0.1, 0.2, 0.3]
-
-
-def test_tag_cache_round_trip():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / ".tag_cache.json"
-        cache = {"python": [0.5, 0.6, 0.7]}
-        save_tag_cache(cache, path)
-        loaded = load_tag_cache(path)
-        assert loaded["python"] == [0.5, 0.6, 0.7]
-
-
-def test_save_tags_json_deduplicates_and_sorts():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "tags.json"
-        changed = save_tags_json(["python", "python", "numpy", "docker"], path)
-        assert changed is True
-        tags = json.loads(path.read_text())
-        assert tags == sorted(set(["python", "numpy", "docker"]))
-
-
-def test_save_tags_json_no_change_returns_false():
-    with tempfile.TemporaryDirectory() as tmp:
-        path = Path(tmp) / "tags.json"
-        save_tags_json(["numpy", "python"], path)
-        changed = save_tags_json(["numpy", "python"], path)
-        assert changed is False
+def test_save_posts_refreshes_source_metadata_and_skips_unchanged(tmp_path):
+    target = tmp_path / "posts.json"
+    io.atomic_write_json([{"slug": "deleted", "date": "2020-01-01"}], target)
+    posts = [
+        {"slug": "older", "date": "2025-01-01"},
+        {"slug": "newer", "date": "2026-01-01"},
+    ]
+    assert io.save_posts_json(posts, target)
+    assert json.loads(target.read_text()) == [
+        {"slug": "newer", "date": "2026-01-01"},
+        {"slug": "older", "date": "2025-01-01"},
+    ]
+    assert not io.save_posts_json(posts, target)

@@ -1,261 +1,135 @@
-function protectMath(src) {
-  const store = [];
-  // Block math ($$...$$) first to avoid matching single $ inside
-  let out = src.replace(/\$\$([\s\S]+?)\$\$/g, (_, math) => {
-    store.push({ block: true, math });
-    return `MATHPH${store.length - 1}BLK`;
-  });
-  // Inline math ($...$) — single line, non-empty
-  out = out.replace(/\$([^\n$]+?)\$/g, (_, math) => {
-    store.push({ block: false, math });
-    return `MATHPH${store.length - 1}INL`;
-  });
-  return { out, store };
-}
-
-function restoreMath(html, store) {
-  html = html.replace(/MATHPH(\d+)BLK/g, (_, i) =>
-    katex.renderToString(store[+i].math, { displayMode: true, throwOnError: false })
-  );
-  html = html.replace(/MATHPH(\d+)INL/g, (_, i) =>
-    katex.renderToString(store[+i].math, { displayMode: false, throwOnError: false })
-  );
-  return html;
-}
-
 function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderMarkdown(source) {
+  const math = [];
+  let text = source.replace(/\$\$([\s\S]+?)\$\$/g, (_, value) => {
+    math.push({ value, displayMode: true });
+    return 'MATHPH' + (math.length - 1) + 'BLK';
+  });
+  text = text.replace(/\$([^\n$]+?)\$/g, (_, value) => {
+    math.push({ value, displayMode: false });
+    return 'MATHPH' + (math.length - 1) + 'INL';
+  });
+  return marked.parse(text).replace(/MATHPH(\d+)(BLK|INL)/g, (_, index) => {
+    const item = math[+index];
+    if (typeof katex === 'undefined') return escapeHtml(item.value);
+    return katex.renderToString(item.value, { displayMode: item.displayMode, throwOnError: false });
+  });
 }
 
 function renderNotebook(nb) {
+  if (!Array.isArray(nb.cells)) throw new Error('Invalid notebook');
   const parts = [];
   let first = true;
-
   for (const cell of nb.cells) {
-    const source = Array.isArray(cell.source) ? cell.source.join('') : (cell.source || '');
+    let source = Array.isArray(cell.source) ? cell.source.join('') : (cell.source || '');
     if (!source.trim()) continue;
-
-    // 첫 번째 마크다운 셀이 frontmatter면 건너뜀
-    if (first && cell.cell_type === 'markdown' && source.trim().startsWith('---')) {
-      first = false;
-      continue;
-    }
+    if (first && cell.cell_type === 'markdown') source = stripFrontmatter(source);
     first = false;
-
     if (cell.cell_type === 'markdown') {
-      const { out, store } = protectMath(source);
-      parts.push(`<div class="nb-cell nb-markdown">${restoreMath(marked.parse(out), store)}</div>`);
+      parts.push('<div class="nb-cell nb-markdown">' + renderMarkdown(source) + '</div>');
     } else if (cell.cell_type === 'code') {
-      let html = `<div class="nb-cell nb-code"><pre><code class="language-python">${escapeHtml(source)}</code></pre>`;
-
-      const outputs = cell.outputs || [];
-      if (outputs.length > 0) {
+      let html = '<div class="nb-cell nb-code"><pre><code class="language-python">' + escapeHtml(source) + '</code></pre>';
+      for (const output of cell.outputs || []) {
+        const data = output.data || {};
+        const text = value => Array.isArray(value) ? value.join('') : (value || '');
         html += '<div class="nb-output">';
-        for (const out of outputs) {
-          if (out.output_type === 'stream') {
-            const text = Array.isArray(out.text) ? out.text.join('') : (out.text || '');
-            html += `<pre class="nb-stdout">${escapeHtml(text)}</pre>`;
-          } else if (out.output_type === 'display_data' || out.output_type === 'execute_result') {
-            const data = out.data || {};
-            if (data['image/png']) {
-              html += `<img class="cell-output-image" src="data:image/png;base64,${data['image/png']}">`;
-            } else if (data['image/svg+xml']) {
-              const svg = Array.isArray(data['image/svg+xml']) ? data['image/svg+xml'].join('') : data['image/svg+xml'];
-              html += `<div class="nb-svg">${svg}</div>`;
-            } else if (data['text/html']) {
-              const h = Array.isArray(data['text/html']) ? data['text/html'].join('') : data['text/html'];
-              html += `<div class="nb-html-out">${h}</div>`;
-            } else if (data['text/plain']) {
-              const t = Array.isArray(data['text/plain']) ? data['text/plain'].join('') : data['text/plain'];
-              html += `<pre class="nb-stdout">${escapeHtml(t)}</pre>`;
-            }
-          } else if (out.output_type === 'error') {
-            html += `<pre class="nb-error">${escapeHtml((out.ename || '') + ': ' + (out.evalue || ''))}</pre>`;
-          }
+        if (output.output_type === 'stream') {
+          html += '<pre>' + escapeHtml(text(output.text)) + '</pre>';
+        } else if (output.output_type === 'error') {
+          html += '<pre class="nb-error">' + escapeHtml((output.ename || '') + ': ' + (output.evalue || '')) + '</pre>';
+        } else if (data['image/png']) {
+          html += '<img class="cell-output-image" alt="노트북 셀의 실행 결과" src="data:image/png;base64,' + escapeHtml(text(data['image/png'])) + '">';
+        } else if (data['image/svg+xml']) {
+          html += '<div class="nb-svg">' + text(data['image/svg+xml']) + '</div>';
+        } else if (data['text/html']) {
+          html += '<div class="nb-html-out">' + text(data['text/html']) + '</div>';
+        } else if (data['text/plain']) {
+          html += '<pre>' + escapeHtml(text(data['text/plain'])) + '</pre>';
         }
         html += '</div>';
       }
-
-      html += '</div>';
-      parts.push(html);
+      parts.push(html + '</div>');
     }
   }
   return parts.join('\n');
 }
 
-function createNbLoader(container) {
-  const el = document.createElement('div');
-  el.className = 'nb-loading';
-  container.innerHTML = '';
-  container.appendChild(el);
+function finishContent(container) {
+  container.querySelectorAll('pre code').forEach(el => {
+    if (typeof hljs !== 'undefined') hljs.highlightElement(el);
+  });
+}
 
-  let barFill = null, barPct = null, barTimer = null;
-
-  function step(cls, text, { cursor = false, progress = false } = {}) {
-    const line = document.createElement('div');
-    line.className = 'nb-loading-line';
-    const cur = cursor ? '<span class="nb-loading-cursor"></span>' : '';
-    line.innerHTML = `<span class="nb-lp nb-lp--${cls}">[${cls.toUpperCase()}]</span><span class="nb-loading-text">${text}${cur}</span>`;
-    el.appendChild(line);
-    requestAnimationFrame(() => requestAnimationFrame(() => line.classList.add('in')));
-
-    if (progress) {
-      const bar = document.createElement('div');
-      bar.className = 'nb-loading-bar';
-      bar.innerHTML = `<div class="nb-loading-bar-track"><div class="nb-loading-bar-fill"></div></div><span class="nb-loading-bar-pct">0%</span>`;
-      el.appendChild(bar);
-      barFill = bar.querySelector('.nb-loading-bar-fill');
-      barPct  = bar.querySelector('.nb-loading-bar-pct');
-      let p = 0;
-      barTimer = setInterval(() => {
-        p = Math.min(92, p + Math.random() * 12 + 4);
-        barFill.style.width = p + '%';
-        barPct.textContent  = Math.floor(p) + '%';
-        if (p >= 92) clearInterval(barTimer);
-      }, 55);
-    }
+async function renderDiagrams() {
+  if (!document.querySelector('.mermaid')) return;
+  try {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral' });
+    await mermaid.run();
+  } catch {
+    // Keep diagram source readable when its renderer is unavailable.
   }
-
-  function finishBar() {
-    if (barTimer) clearInterval(barTimer);
-    if (barFill) barFill.style.width = '100%';
-    if (barPct)  barPct.textContent  = '100%';
-  }
-
-  function finish(cb) {
-    setTimeout(() => {
-      el.style.opacity = '0';
-      setTimeout(() => { el.remove(); if (cb) cb(); }, 250);
-    }, 500);
-  }
-
-  return { step, finishBar, finish };
 }
 
 (async () => {
-  const slug = getSlugFromURL();
-
-  // Configure marked: mermaid code blocks + YouTube extension
-  mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-
-  marked.use({
-    renderer: {
-      code({ text, lang }) {
-        if (lang === 'mermaid') return `<div class="mermaid">${text}</div>`;
-        return false;
-      }
+  const article = document.getElementById('post-content');
+  try {
+    if (typeof marked === 'undefined') throw new Error('Markdown renderer unavailable');
+    marked.use({
+      renderer: {
+        code({ text, lang }) {
+          return lang === 'mermaid' ? '<pre class="mermaid">' + escapeHtml(text) + '</pre>' : false;
+        }
+      },
+      extensions: [{
+        name: 'youtube',
+        level: 'block',
+        start(source) { return source.match(/^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)/m)?.index; },
+        tokenizer(source) {
+          const match = source.match(/^(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)[^\s]*)\n?/);
+          if (match) return { type: 'youtube', raw: match[0], videoId: match[2] };
+        },
+        renderer(token) {
+          return '<div class="video-container"><iframe title="YouTube 동영상" src="https://www.youtube.com/embed/' + token.videoId + '" loading="lazy" allowfullscreen></iframe></div>';
+        }
+      }]
+    });
+    document.querySelectorAll('.markdown-source').forEach(container => {
+      container.innerHTML = renderMarkdown(container.textContent);
+      container.classList.remove('markdown-source');
+      finishContent(container);
+    });
+    if (article) {
+      const response = await fetch(article.dataset.source);
+      if (!response.ok) throw new Error('Content unavailable');
+      article.innerHTML = article.dataset.notebook === 'true'
+        ? renderNotebook(await response.json())
+        : renderMarkdown(stripFrontmatter(await response.text()));
+      finishContent(article);
     }
-  });
-
-  marked.use({ extensions: [{
-    name: 'youtube',
-    level: 'block',
-    start(src) {
-      return src.match(/^https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be)/)?.index;
-    },
-    tokenizer(src) {
-      const match = src.match(/^(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)[^\s]*)\n?/);
-      if (match) return { type: 'youtube', raw: match[0], videoId: match[2] };
-    },
-    renderer(token) {
-      return `<div class="video-container"><iframe src="https://www.youtube.com/embed/${token.videoId}" allowfullscreen></iframe></div>`;
+    await renderDiagrams();
+  } catch {
+    if (article) {
+      article.replaceChildren();
+      const message = document.createElement('p');
+      message.textContent = '글을 불러오지 못했습니다. 잠시 후 다시 시도하거나 ';
+      const link = document.createElement('a');
+      link.href = article.dataset.source;
+      link.textContent = '원본 파일을 열어 주세요.';
+      message.appendChild(link);
+      article.appendChild(message);
     }
-  }]});
-
-  const [posts, mdRes, graphData] = await Promise.all([
-    fetchPosts('../../blog/posts.json'),
-    fetch('./content.md'),
-    fetchGraph('../../blog/graph.json'),
-  ]);
-
-  const post = posts.find(p => p.slug === slug);
-  if (post) {
-    document.title = `${post.title} — ahrism`;
-    document.getElementById('post-title').textContent = post.title;
-    document.getElementById('post-meta').innerHTML =
-      `<span class="label--slash">${post.date}</span>` +
-      post.tags.map(t => `<span class="tag">${t}</span>`).join(' ');
-
-    const desc = post.summary || post.title;
-    const url = `https://ahrism.com/posts/${slug}/`;
-    const setMeta = (sel, val) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); };
-    setMeta('meta[property="og:title"]', `${post.title} — ahrism`);
-    setMeta('meta[property="og:description"]', desc);
-    setMeta('meta[property="og:url"]', url);
-    setMeta('meta[property="og:type"]', 'article');
-    setMeta('meta[name="twitter:title"]', `${post.title} — ahrism`);
-    setMeta('meta[name="twitter:description"]', desc);
-  }
-
-  if (post && post.notebook) {
-    const labUrl = `../../lab/index.html?path=posts/${slug}/content.ipynb`;
-    document.getElementById('post-header').insertAdjacentHTML('afterend',
-      `<div class="nb-open-bar"><a href="${labUrl}" class="nb-open-btn" target="_blank" rel="noopener">▶ JupyterLite에서 실행</a></div>`
-    );
-    const contentEl = document.getElementById('post-content');
-    const loader = createNbLoader(contentEl);
-    loader.step('info', 'Fetching <b>content.ipynb</b>...', { progress: true });
-
-    const nbRes = await fetch('./content.ipynb');
-    loader.finishBar();
-
-    if (nbRes.ok) {
-      const nb = await nbRes.json();
-      const cellCount = nb.cells.filter(c =>
-        (Array.isArray(c.source) ? c.source.join('') : (c.source || '')).trim()
-      ).length;
-      loader.step('ok', `Parsed — <b>${cellCount}</b> cells`);
-
-      const rendered = renderNotebook(nb);
-      const imgCount = (rendered.match(/class="cell-output-image"/g) || []).length;
-      loader.step('ok', 'Rendered');
-      if (imgCount > 0) {
-        loader.step('info', `Dark-sync → <b>${imgCount}</b> image output${imgCount > 1 ? 's' : ''}`);
-      }
-      loader.step('ok', 'Ready ●', { cursor: true });
-
-      loader.finish(() => {
-        contentEl.innerHTML = rendered;
-        document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-        mermaid.run();
-      });
-    } else {
-      loader.finish(() => {
-        contentEl.innerHTML = '<p>노트북을 불러올 수 없습니다.</p>';
-      });
-    }
-  } else if (mdRes.ok) {
-    const md = await mdRes.text();
-    const { out, store } = protectMath(stripFrontmatter(md));
-    document.getElementById('post-content').innerHTML = restoreMath(marked.parse(out), store);
-    document.querySelectorAll('pre code').forEach(el => hljs.highlightElement(el));
-    mermaid.run();
-  } else {
-    document.getElementById('post-content').innerHTML = '<p>글을 불러올 수 없습니다.</p>';
-  }
-
-  if (graphData && slug) {
-    const section = document.getElementById('related-graph-section');
-    const container = document.getElementById('subgraph-container');
-    const slider = document.getElementById('depth-slider');
-    const depthValue = document.getElementById('depth-value');
-    const navigate = (id) => { window.location.href = '../' + id + '/'; };
-
-    let subCy = renderSubgraph(container, graphData, slug, 2, { onNodeClick: navigate });
-
-    if (subCy) {
-      section.style.display = '';
-      slider.addEventListener('input', function () {
-        depthValue.textContent = slider.value;
-        if (subCy) subCy.destroy();
-        container.innerHTML = '';
-        subCy = renderSubgraph(container, graphData, slug, slider.valueAsNumber, { onNodeClick: navigate });
-        if (!subCy) container.innerHTML = '<div class="graph-empty">이 깊이에서 관련 글이 없습니다</div>';
-      });
-    }
+  } finally {
+    if (article) article.setAttribute('aria-busy', 'false');
   }
 })();

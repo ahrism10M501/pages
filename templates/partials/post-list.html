@@ -1,0 +1,16 @@
+<ol class="post-list">
+  {% for entry in entries %}
+  <li data-post data-search="{{ entry.title }} {{ entry.summary }} {{ entry.tags | join(' ') }}">
+    <a class="post-link" href="{{ root }}posts/{{ entry.slug | urlencode }}/">
+      <div>
+        <h3>{{ entry.title }}</h3>
+        <p>{{ entry.summary }}</p>
+        {% if entry.tags %}<span class="post-tags">{{ entry.tags | join(' · ') }}</span>{% endif %}
+      </div>
+      <time datetime="{{ entry.date }}">{{ entry.date }}</time>
+    </a>
+  </li>
+  {% else %}
+  <li class="empty-state">아직 작성한 글이 없습니다.</li>
+  {% endfor %}
+</ol>

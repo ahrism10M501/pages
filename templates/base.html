@@ -1,44 +1,36 @@
 <!DOCTYPE html>
-<html lang="ko" data-theme="dark">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Ahrism{% endblock %}</title>
-
-  <!-- Favicon -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Ahrism — 연구와 개발의 기록{% endblock %}</title>
+  <meta name="description" content="{% block description %}AI, 데이터, 그리고 현실 세계와 맞닿는 소프트웨어를 공부하고 만드는 기록.{% endblock %}">
+  <link rel="canonical" href="{{ canonical_url }}">
   <link rel="icon" href="{{ root }}assets/favicon.ico" sizes="any">
-  <link rel="icon" type="image/png" sizes="32x32" href="{{ root }}assets/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="{{ root }}assets/favicon-16x16.png">
   <link rel="apple-touch-icon" href="{{ root }}assets/apple-touch-icon.png">
-  <link rel="manifest" href="{{ root }}assets/manifest.json">
-  <meta name="theme-color" content="#0a0a0a">
-
-  <!-- Open Graph -->
+  <meta name="theme-color" content="#faf9f6">
   <meta property="og:site_name" content="Ahrism">
   <meta property="og:type" content="{% block og_type %}website{% endblock %}">
-  <meta property="og:title" content="{% block og_title %}Ahrism{% endblock %}">
-  <meta property="og:description" content="{% block og_description %}Building Practical AI Systems · Physical Agents{% endblock %}">
-  <meta property="og:url" content="{% block og_url %}https://ahrism.com{% endblock %}">
-  <meta property="og:image" content="https://ahrism.com/assets/android-chrome-512x512.png">
-
-  <!-- Twitter Card -->
+  <meta property="og:title" content="{{ post.title if post else 'Ahrism — 연구와 개발의 기록' }}">
+  <meta property="og:description" content="{{ post.summary if post else 'AI, 데이터, 그리고 현실 세계와 맞닿는 소프트웨어의 기록.' }}">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta property="og:image" content="{{ site_url }}/assets/android-chrome-512x512.png">
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="{% block twitter_title %}Ahrism{% endblock %}">
-  <meta name="twitter:description" content="{% block twitter_description %}Building Practical AI Systems · Physical Agents{% endblock %}">
-  <meta name="twitter:image" content="https://ahrism.com/assets/android-chrome-512x512.png">
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <link rel="stylesheet" href="{{ root }}style.css">
   {% block head_extra %}{% endblock %}
 </head>
 <body>
-  {% include "partials/sidebar.html" %}
-  <div id="page-content">
-    {% block content %}{% endblock %}
-    {% if not hide_footer %}{% include "partials/footer.html" %}{% endif %}
-  </div>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <a class="wordmark" href="{{ root }}" aria-label="Ahrism 홈">ahrism<span aria-hidden="true">.</span></a>
+    <nav aria-label="주 메뉴">
+      {% for item in nav %}
+      <a href="{{ root }}{{ item.href }}"{% if item.id == current_page %} aria-current="page"{% endif %}>{{ item.label }}</a>
+      {% endfor %}
+    </nav>
+  </header>
+  {% block content %}{% endblock %}
+  {% include "partials/footer.html" %}
   {% block scripts %}{% endblock %}
-  <script src="{{ root }}src/sidebar.js"></script>
-  <script src="{{ root }}src/page-fold.js"></script>
 </body>
 </html>

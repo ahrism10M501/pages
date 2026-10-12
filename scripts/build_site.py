@@ -1,101 +1,75 @@
 #!/usr/bin/env python3
-# /// script
-# requires-python = ">=3.10"
-# dependencies = ["jinja2>=3.1"]
-# ///
-"""
-Static site builder.
+"""Build metadata and HTML from the existing Markdown and notebook sources."""
 
-Renders templates/pages/*.html to top-level HTML files using Jinja2.
-Each template extends base.html and receives:
-  - nav: list of sidebar items (from templates/nav.json)
-  - current_page: id of current page (e.g. "home", "blog")
-  - root: relative path to repo root (e.g. "./", "../", "../../")
-
-Usage:
-  uv run python scripts/build_site.py
-"""
-
-import json
+import sys
 from pathlib import Path
+from urllib.parse import quote
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-ROOT = Path(__file__).parent.parent
-TEMPLATES = ROOT / "templates"
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 
-# (template path, output path relative to ROOT, current_page id)
+from pipeline import io, scanner
+from scripts import twinkle_update
+
+SITE_URL = "https://ahrism10m501.github.io/pages"
 PAGES = [
-    ("pages/home.html",    "index.html",         "home"),
-    ("pages/about.html",   "about/index.html",   "about"),
-    ("pages/blog.html",    "blog/index.html",    "blog"),
+    ("pages/home.html", "index.html", "home"),
+    ("pages/about.html", "about/index.html", "about"),
+    ("pages/blog.html", "blog/index.html", "blog"),
     ("pages/twinkle.html", "twinkle/index.html", "twinkle"),
-    ("pages/github.html",  "github/index.html",  "github"),
+    ("pages/github.html", "github/index.html", "github"),
 ]
 
 
-def load_nav():
-    return json.loads((TEMPLATES / "nav.json").read_text(encoding="utf-8"))
-
-
 def make_env():
-    return Environment(
-        loader=FileSystemLoader(str(TEMPLATES)),
+    env = Environment(
+        loader=FileSystemLoader(str(ROOT / "templates")),
         autoescape=select_autoescape(["html"]),
-        trim_blocks=True,
-        lstrip_blocks=True,
-        keep_trailing_newline=True,
     )
+    env.filters["urlencode"] = lambda value: quote(str(value), safe="")
+    return env
 
 
 def path_to_root(out_rel: str) -> str:
-    """'index.html' → './', 'foo/index.html' → '../', 'a/b/index.html' → '../../'"""
     depth = out_rel.count("/")
     return "../" * depth if depth else "./"
 
 
-def render_page(env, nav, template_name, out_rel, current_page):
+def render_page(env, context, template_name, out_rel, current_page, post=None):
     out_path = ROOT / out_rel
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    tpl = env.get_template(template_name)
-    html = tpl.render(
-        nav=nav,
+    page_path = out_rel.removesuffix("index.html")
+    html = env.get_template(template_name).render(
+        **context,
         current_page=current_page,
         root=path_to_root(out_rel),
+        post=post,
+        canonical_url=f"{SITE_URL}/{quote(page_path, safe='/')}",
     )
     out_path.write_text(html, encoding="utf-8")
     print(f"  built {out_rel}")
 
 
-def render_post_pages(env, nav):
-    """Render posts/<slug>/index.html for every posts/<slug>/content.md."""
-    posts_dir = ROOT / "posts"
-    if not posts_dir.exists():
-        return 0
-    count = 0
-    seen = set()
-    # Posts may use content.md or content.ipynb (notebooks).
-    for content in sorted(list(posts_dir.glob("*/content.md")) + list(posts_dir.glob("*/content.ipynb"))):
-        slug = content.parent.name
-        if slug in seen or slug.startswith("_"):
-            continue
-        seen.add(slug)
-        render_page(env, nav, "pages/post.html", f"posts/{slug}/index.html", "blog")
-        count += 1
-    return count
-
-
 def main():
-    print("Building site...")
+    posts = sorted(scanner.scan_posts(ROOT / "posts"), key=lambda post: post["date"], reverse=True)
+    io.save_posts_json(posts, ROOT / "blog" / "posts.json")
+    twinkles = twinkle_update.scan_twinkles(ROOT / "twinkle")
+    twinkle_update.update_twinkles_json(twinkles, ROOT / "twinkle" / "twinkles.json")
+    context = {
+        "nav": io.load_json(ROOT / "templates" / "nav.json"),
+        "posts": posts,
+        "twinkles": twinkles,
+        "projects": io.load_json(ROOT / "projects.json", default=[]),
+        "site_url": SITE_URL,
+    }
     env = make_env()
-    nav = load_nav()
-    for tpl, out_rel, current in PAGES:
-        if not (TEMPLATES / tpl).exists():
-            print(f"  skip {out_rel} (template missing: {tpl})")
-            continue
-        render_page(env, nav, tpl, out_rel, current)
-    posts_built = render_post_pages(env, nav)
-    print(f"Done. {len(PAGES)} pages + {posts_built} posts built.")
+    for template_name, out_rel, current_page in PAGES:
+        render_page(env, context, template_name, out_rel, current_page)
+    for post in posts:
+        render_page(env, context, "pages/post.html", f"posts/{post['slug']}/index.html", "blog", post)
+    print(f"Done. {len(PAGES)} pages + {len(posts)} posts, {len(twinkles)} short notes.")
 
 
 if __name__ == "__main__":

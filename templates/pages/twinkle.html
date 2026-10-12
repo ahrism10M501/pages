@@ -1,54 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Twinkle — Ahrism{% endblock %}
-{% block head_extra %}
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-{% endblock %}
-
+{% block title %}메모 — Ahrism{% endblock %}
 {% block content %}
-<aside class="twinkle-archive" id="twinkle-archive">
-  <div class="twinkle-archive-resize" id="archive-resize-handle">⠿</div>
-  <div class="twinkle-archive-inner">
-    <div class="label">ARCHIVE</div>
-    <div class="archive-tag-chips" id="archive-tags"></div>
-    <div class="archive-list" id="archive-list"></div>
-  </div>
-</aside>
-
-<main class="container">
-  <div class="twinkle-layout">
-    <div class="twinkle-feed-col">
-      <section class="twinkle-mobile-filter-panel" aria-label="모바일 트윙클 필터">
-        <div class="twinkle-mobile-filter-title">Filter</div>
-        <div id="mobile-tags" class="twinkle-mobile-tags"></div>
-      </section>
-      <div class="twinkle-feed" id="twinkle-feed">
-        <div class="label">✦ TWINKLE</div>
-        <p style="color:#555;font-size:0.85rem">로딩 중...</p>
-      </div>
-    </div>
-  </div>
+<main id="main" class="container">
+  <header class="page-heading">
+    <p class="eyebrow">Notes</p>
+    <h1>짧은 메모</h1>
+    <p>배우고 만들며 떠오른 생각들.</p>
+  </header>
+  {% for note in twinkles %}
+  <article class="note" id="{{ note.slug }}">
+    <time datetime="{{ note.date }}">{{ note.date }}</time>
+    <h2><a href="#{{ note.slug | urlencode }}">{{ note.title }}</a></h2>
+    <p class="post-tags">{{ note.tags | join(' · ') }}</p>
+    <div class="post-content markdown-source">{{ note.content }}</div>
+  </article>
+  {% else %}<p class="empty-state">아직 작성한 메모가 없습니다.</p>{% endfor %}
 </main>
 {% endblock %}
-
-{% block scripts %}
-<script src="{{ root }}src/twinkle-feed.js"></script>
-<script>
-initTwinkleFeed({
-  twinklesUrl: '{{ root }}twinkle/twinkles.json',
-  sessionKey: 'twinkle-expanded',
-  ids: {
-    feed: 'twinkle-feed',
-    archive: 'twinkle-archive',
-    archiveTags: 'archive-tags',
-    archiveList: 'archive-list',
-    mobileTags: 'mobile-tags',
-    resizeHandle: 'archive-resize-handle',
-    prev: 'nav-prev',
-    next: 'nav-next',
-    cardPrefix: 'card-',
-  },
-  useHash: true,
-  prependLabel: true,
-});
-</script>
-{% endblock %}
+{% block scripts %}{% include "partials/content-scripts.html" %}{% endblock %}

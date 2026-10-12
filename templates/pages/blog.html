@@ -1,183 +1,19 @@
 {% extends "base.html" %}
-{% block title %}Blog — Ahrism{% endblock %}
-
+{% block title %}글 — Ahrism{% endblock %}
 {% block content %}
-<main class="container">
-  <div class="search-bar" style="margin-top:1rem">
-    <input type="text" id="search-input" placeholder="검색...">
-    <label class="toggle-label" id="tfidf-label" style="display:none">
-      <input type="checkbox" id="tfidf-toggle">
-      키워드 가중
-    </label>
-  </div>
-
-  <div style="display:flex;align-items:flex-start;gap:0.5rem;margin-bottom:1rem">
-    <div class="tag-filters" id="tag-filters" style="flex:1;margin-bottom:0"></div>
-    <div class="view-toggle" style="margin-bottom:0;flex-shrink:0;margin-top:0.15rem">
-      <button id="btn-graph" title="그래프 뷰">G</button>
-      <button id="btn-list" class="active" title="리스트 뷰">☰</button>
-    </div>
-  </div>
-
-  <div id="graph-view" style="display:none">
-    <div class="graph-container" id="graph-container"></div>
-  </div>
-
-  <div id="list-view">
-    <div id="posts-container"></div>
-  </div>
+<main id="main" class="container">
+  <header class="page-heading">
+    <p class="eyebrow">Archive</p>
+    <h1>글</h1>
+    <p>공부하며 이해한 것과 직접 만들어 본 것을 기록합니다.</p>
+  </header>
+  <form class="search" role="search" onsubmit="return false;" hidden>
+    <label for="search-input">글 검색</label>
+    <input type="search" id="search-input" placeholder="제목, 내용 요약, 태그로 검색" autocomplete="off">
+    <p id="search-status" role="status" aria-live="polite">{{ posts | length }}개의 글</p>
+  </form>
+  {% set entries = posts %}{% include "partials/post-list.html" %}
+  <p id="search-empty" class="empty-state" hidden>검색 결과가 없습니다. 다른 검색어를 입력해 주세요.</p>
 </main>
 {% endblock %}
-
-{% block scripts %}
-<script src="{{ root }}src/utils.js"></script>
-<script src="{{ root }}src/posts.js"></script>
-<script src="{{ root }}src/graph.js"></script>
-<script>
-function loadCytoscapeScripts() {
-  if (window._cytoscapeLoaded) return Promise.resolve();
-  if (window._cytoscapeLoading) return window._cytoscapeLoading;
-  var srcs = [
-    'https://cdn.jsdelivr.net/npm/cytoscape@3.30.4/dist/cytoscape.min.js',
-    'https://cdn.jsdelivr.net/npm/layout-base@2.0.1/layout-base.js',
-    'https://cdn.jsdelivr.net/npm/cose-base@2.2.0/cose-base.js',
-    'https://cdn.jsdelivr.net/npm/cytoscape-fcose@2.2.0/cytoscape-fcose.js',
-  ];
-  window._cytoscapeLoading = srcs.reduce(function (chain, src) {
-    return chain.then(function () {
-      return new Promise(function (resolve, reject) {
-        var s = document.createElement('script');
-        s.src = src; s.onload = resolve; s.onerror = reject;
-        document.head.appendChild(s);
-      });
-    });
-  }, Promise.resolve()).then(function () { window._cytoscapeLoaded = true; });
-  return window._cytoscapeLoading;
-}
-
-(async () => {
-  const graphData = await fetchGraph('{{ root }}blog/graph.json');
-  const posts = await fetchPosts('{{ root }}blog/posts.json');
-  const nodes = graphData ? graphData.nodes : posts.map(p => ({
-    id: p.slug, title: p.title, date: p.date, tags: p.tags, summary: p.summary, tfidf: {}
-  }));
-  const hasGraph = graphData && graphData.nodes.length > 1;
-
-  const allTags = [...new Set(nodes.flatMap(n => n.tags || []))].sort();
-  const tagContainer = document.getElementById('tag-filters');
-
-  const allChip = document.createElement('span');
-  allChip.className = 'tag--filter active';
-  allChip.textContent = '전체';
-  allChip.dataset.all = '1';
-  allChip.addEventListener('click', () => {
-    document.querySelectorAll('.tag--filter:not([data-all])').forEach(c => c.classList.remove('active'));
-    allChip.classList.add('active');
-    applyFilters();
-  });
-  tagContainer.appendChild(allChip);
-
-  allTags.forEach(tag => {
-    const chip = document.createElement('span');
-    chip.className = 'tag--filter';
-    chip.textContent = tag;
-    chip.addEventListener('click', () => {
-      allChip.classList.remove('active');
-      chip.classList.toggle('active');
-      const anyActive = [...document.querySelectorAll('.tag--filter:not([data-all]).active')].length > 0;
-      if (!anyActive) allChip.classList.add('active');
-      applyFilters();
-    });
-    tagContainer.appendChild(chip);
-  });
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const urlTagParam = urlParams.get('tags');
-  if (urlTagParam) {
-    const urlTags = urlTagParam.split(',').map(decodeURIComponent);
-    allChip.classList.remove('active');
-    document.querySelectorAll('.tag--filter:not([data-all])').forEach(chip => {
-      if (urlTags.includes(chip.textContent)) chip.classList.add('active');
-    });
-    const anyActive = [...document.querySelectorAll('.tag--filter:not([data-all]).active')].length > 0;
-    if (!anyActive) allChip.classList.add('active');
-    applyFilters();
-  }
-
-  const btnGraph = document.getElementById('btn-graph');
-  const btnList = document.getElementById('btn-list');
-  const graphView = document.getElementById('graph-view');
-  const listView = document.getElementById('list-view');
-  let currentView = 'list', cy = null;
-
-  function setView(view) {
-    currentView = view;
-    if (view === 'graph') {
-      graphView.style.display = ''; listView.style.display = 'none';
-      btnGraph.classList.add('active'); btnList.classList.remove('active');
-      if (!cy && hasGraph) initMainGraph();
-    } else {
-      graphView.style.display = 'none'; listView.style.display = '';
-      btnList.classList.add('active'); btnGraph.classList.remove('active');
-    }
-    applyFilters();
-  }
-
-  btnGraph.addEventListener('click', () => loadCytoscapeScripts().then(() => setView('graph')));
-  btnList.addEventListener('click', () => setView('list'));
-
-  if (!hasGraph) {
-    btnGraph.disabled = true;
-    btnGraph.style.opacity = '0.3';
-    document.getElementById('graph-container').innerHTML =
-      '<div class="graph-empty">포스트가 더 추가되면 그래프가 표시됩니다</div>';
-  }
-
-  function initMainGraph() {
-    cy = initGraph(document.getElementById('graph-container'), graphData, {
-      onNodeClick: function (slug) { window.location.href = '{{ root }}posts/' + slug + '/'; },
-    });
-  }
-
-  let debounceTimer;
-  const searchInput = document.getElementById('search-input');
-  const tfidfToggle = document.getElementById('tfidf-toggle');
-
-  function applyFilters() {
-    const query = searchInput.value;
-    const mode = tfidfToggle.checked ? 'tfidf' : 'text';
-    const activeTags = [...document.querySelectorAll('.tag--filter:not([data-all]).active')].map(el => el.textContent);
-
-    let matchedIds = searchPosts(nodes, query, mode);
-    if (activeTags.length > 0) {
-      const tagMatched = new Set(filterByTags(nodes, activeTags));
-      matchedIds = matchedIds.filter(id => tagMatched.has(id));
-    }
-
-    if (currentView === 'graph' && cy) {
-      if (!query && activeTags.length === 0) resetHighlight(cy);
-      else highlightNodes(cy, matchedIds);
-    }
-
-    if (currentView === 'list') {
-      const matchedSet = new Set(matchedIds);
-      const filtered = posts.filter(p => matchedSet.has(p.slug));
-      renderPostList(filtered, document.getElementById('posts-container'), '{{ root }}posts/');
-    }
-  }
-
-  const tfidfLabel = document.getElementById('tfidf-label');
-  searchInput.addEventListener('input', () => {
-    const hasQuery = searchInput.value.trim();
-    tfidfLabel.style.display = hasQuery ? '' : 'none';
-    if (!hasQuery) tfidfToggle.checked = false;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(applyFilters, 300);
-  });
-  tfidfToggle.addEventListener('change', applyFilters);
-
-  setView(currentView);
-  if (currentView === 'list') renderPostList(posts, document.getElementById('posts-container'), '{{ root }}posts/');
-})();
-</script>
-{% endblock %}
+{% block scripts %}<script src="{{ root }}src/posts.js"></script>{% endblock %}

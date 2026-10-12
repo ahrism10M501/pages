@@ -31,3 +31,8 @@ posts/*/index.html
 lab/
 _jl_contents/
 _site/
+
+# Browser tests
+node_modules/
+playwright-report/
+test-results/
